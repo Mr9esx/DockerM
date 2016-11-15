@@ -4,6 +4,18 @@ DockerM - Docker管理平台
 基本架构
 ![image_a01](http://www.nervgeek.com/wp-content/uploads/2016/11/DockerM_打死再也不改版_ver3.0.png)
 <br>
+<br>
+界面一览（使用了 GentellelaAlela UI）
+![image_a02](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115212155.jpg)
+![image_a03](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115213105.jpg)
+![image_a04](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115212208.jpg)
+![image_a05](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115181925.jpg)
+![image_a06](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115212218.jpg)
+![image_a07](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115212625.jpg)
+![image_a08](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115212634.jpg)
+![image_a09](http://www.nervgeek.com/wp-content/uploads/2016/11/QQ截图20161115212644.jpg)
+![image_a10](http://www.nervgeek.com/wp-content/uploads/2016/11/TY5GMDOT5LE8_V@I.png)
+<br>
 ##Docker_Web
 使用 Flask 编写的Web UI，界面操作通过 Ajax 访问 API 向 RabbitMQ 发送操作信息，Docker_Client 中的 GetQueueInfo2ControlDocker 监听队列，获取信息操作。<br>
 目前界面仅有基本信息查看、容器详细 JSON 信息查看、容器基本监控信息、容器开关暂停恢复功能。
