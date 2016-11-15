@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block head %}
+    <script src="{{ url_for('static',filename='js/control.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#index').addClass('current-page');
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row top_tiles">
+        <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="tile-stats">
+                <div class="icon"><i class="fa fa-server"></i></div>
+                <div class="count">{{ allHost }}</div>
+                <h3>主机数量</h3>
+                <p>Number of Host</p>
+            </div>
+        </div>
+        <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="tile-stats">
+                <div class="icon"><i class="fa fa-cube"></i></div>
+                <div class="count">{{ allContainer }}</div>
+                <h3>容器数量</h3>
+                <p>Number of Container</p>
+            </div>
+        </div>
+        <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="tile-stats">
+                <div class="icon"><i class="fa fa-check-circle"></i></div>
+                <div class="count">{{ runningContainer }}</div>
+                <h3>正在运行</h3>
+                <p>Running Container</p>
+            </div>
+        </div>
+        <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="tile-stats">
+                <div class="icon"><i class="fa fa-window-maximize"></i></div>
+                <div class="count">1</div>
+                <h3>应用数量</h3>
+                <p>Number of App</p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-9">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 class="x_title_h2">关注列表 <small>Following List</small></h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <table class="table table-striped projects">
+                        <thead>
+                            <tr>
+                                <th width="70">容器状态</th>
+                                <th style="width: 20%">容器名称</th>
+                                <th style="width: 20%">所在主机</th>
+                                <th style="width: 20%">处理器占用率</th>
+                                <th style="width: 20%">内存占用率</th>
+                                <th style="width: 10%;">操作</th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                    {% if (containersList | length) == 0 %}
+                        <tr>
+                            <td colspan="6" style="text-align: center">
+                                无关注容器、主机、镜像
+                            </td>
+                        </tr>
+                    {% else %}
+                        {% for info in containersList %}
+
+                            <tr>
+                                <td>
+                                    {% if info['status'] == 'running' %}
+                                        <i class="fa fa-check-circle fa-fw fa-3x icon-success"></i>
+                                    {% elif info['status'] == 'exited' %}
+                                        <i class="fa fa-times-circle fa-fw fa-3x icon-error"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/container/info/{{ info['container_id'] }}">{{ info['container_name'] }}</a>
+                                    <br />
+                                    <small>{{ info['container_id'] | cutStr(0,12) }}</small>
+                                </td>
+                                <td>
+                                    <a href="/host/info/{{ info['host_id'] }}">{{ info['host_name'] }}</a>
+                                    <br />
+                                    <small>{{ info['host_id'] | cutStr(0,12) }}</small>
+                                </td>
+                                <td class="project_progress">
+                                    <div class="progress progress_sm">
+                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57"></div>
+                                    </div>
+                                    <small>占用率 : 57%</small>
+                                </td>
+                                <td class="project_progress">
+                                    <div class="progress progress_sm">
+                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57"></div>
+                                    </div>
+                                    <small>占用率 : 57%</small>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-danger btn-sm table-control-btn unfollowbtn" value="{{ info['container_id'] }}"> 取消关注 </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 class="x_title_h2">最近操作 <small>Recent operation</small></h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <ul class="list-unstyled top_profiles scroll-view">
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body">
+                                <a class="title" href="#">YYF</a>
+                                <p><strong class="icon-success">启动 </strong> 容器 d515940d5cdf </p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body">
+                                <a class="title" href="#">ZSMJ</a>
+                                <p><strong class="icon-error">关闭 </strong> 容器 d49a1f15dd56 </p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body">
+                                <a class="title" href="#">iceice</a>
+                                <p><strong class="icon-success">启动 </strong> 容器 b60f5447512f </p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body">
+                                <a class="title" href="#">Bruning</a>
+                                <p><strong class="icon-success">启动 </strong> 容器 1a3be9861ff9 </p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body">
+                                <a class="title" href="#">2009</a>
+                                <p><strong class="icon-success">启动 </strong> 容器 4ba7bd103829 </p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <!-- Meta, title, CSS, favicons, etc. -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>DockerM - 登陆</title>
+
+        <!-- Bootstrap -->
+        <link href="{{ url_for('static',filename='lib/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+       <!-- Font Awesome -->
+        <link href="{{ url_for('static',filename='lib/font-awesome/font-awesome.min.css') }}" rel="stylesheet">
+        <!-- NProgress -->
+        <link href="{{ url_for('static',filename='lib/nprogress/nprogress.css') }}" rel="stylesheet">
+        <!-- Animate.css -->
+        <link href="{{ url_for('static',filename='lib/animate.css/animate.min.css') }}" rel="stylesheet">
+        <!-- Custom Theme Style -->
+        <link href="{{ url_for('static',filename='css/custom.css') }}" rel="stylesheet">
+        <!-- PNotify -->
+        <link href="{{ url_for('static',filename='lib/pnotify/pnotify.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static',filename='lib/pnotify/pnotify.buttons.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static',filename='lib/pnotify/pnotify.nonblock.css') }}" rel="stylesheet">
+        <!-- jQuery -->
+        <script src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
+        <!-- PNotify -->
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.buttons.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.nonblock.js') }}"></script>
+    </head>
+    <style>
+        .login,h1{
+            font-family: 'Microsoft YaHei UI Light','Helvetica Neue', Roboto, Arial, 'Droid Sans', sans-serif !important;
+        }
+    </style>
+    <script>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            $(document).ready(function() {
+                {% for category, message  in messages %}
+                    {% if message == 'register_failed' %}
+                        new PNotify({
+                            title: '注册失败！',
+                            text: '{{ category }}',
+                            type: 'error',
+                            styling: 'bootstrap3'
+                        });
+                    {% elif message == 'register_succeed' %}
+                        new PNotify({
+                            title: '注册成功！',
+                            text: '{{ category }}',
+                            type: 'success',
+                            styling: 'bootstrap3'
+                        });
+                    {% elif message == 'login_failed' %}
+                        new PNotify({
+                            title: '登陆失败！',
+                            text: '用户名或者密码错误！',
+                            type: 'error',
+                            styling: 'bootstrap3'
+                        });
+                    {% elif message == 'no_login' %}
+                        new PNotify({
+                            title: '尚未登陆！',
+                            text: '请登录！',
+                            type: 'error',
+                            styling: 'bootstrap3'
+                        });
+                    {% elif message == 'logout' %}
+                        new PNotify({
+                            title: '登出成功！',
+                            text: '登出成功！',
+                            type: 'success',
+                            styling: 'bootstrap3'
+                        });
+                    {% elif message == 'error' %}
+                        new PNotify({
+                            title: '未知错误！',
+                            text: '{{ category }}',
+                            type: 'error',
+                            styling: 'bootstrap3'
+                        });
+                    {% endif %}
+                {% endfor %}
+            });
+        {% endwith %}
+
+    </script>
+    <body class="login">
+        <div>
+            <a class="hiddenanchor" id="signup"></a>
+            <a class="hiddenanchor" id="signin"></a>
+            <div class="login_wrapper">
+                <div class="animate form login_form">
+                    <section class="login_content">
+                        <form method="post" action="/login" role="form">
+                            <h1 style="margin-bottom: 60px;">登陆 DockerM </h1>
+                            {{ loginForm.csrf_token }}
+                            <div>
+                                {{ loginForm.username(id='username',placeholder='用户名',class='form-control') }}
+                            </div>
+                            <div>
+                                {{ loginForm.password(id='password',placeholder='密码',class='form-control') }}
+                            </div>
+                            <div style="margin: 0 auto;">
+                                {{ loginForm.login(class='btn btn-default submit') }}
+                            </div>
+                            <div>
+                            </div>
+                            <div class="clearfix" style="margin-bottom: 30px;"></div>
+                            <p><a class="reset_pass" href="#">忘记密码?</a></p>
+                            <div class="separator">
+                                <p class="change_link">
+                                    第一次使用?<a href="#signup" class="to_register"> 注册 </a>
+                                </p>
+                                <div class="clearfix"></div>
+                                <div>
+                                    <span class="logo"><i class="fa fa-cube"></i> DockerM </span>
+                                    <p>Copyright © 2016 · All Rights Reserved </p>
+                                    <p> Mr9esx from <a href="http://www.nervgeek.com" target="_blank">NERVGEEK</a></p>
+                                </div>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+                <div id="register" class="animate form registration_form">
+                    <section class="login_content">
+                        <form method="post" action="/register" role="form">
+                            <h1>注册</h1>
+                            {{ registerForm.csrf_token }}
+                            <div>
+                                {{ registerForm.username(id='username',placeholder='用户名',class='form-control') }}
+                            </div>
+                            <div>
+                                {{ registerForm.email(id='email',placeholder='邮箱',class='form-control') }}
+                            </div>
+                            <div>
+                                {{ registerForm.password(id='password',placeholder='密码',class='form-control') }}
+                            </div>
+                            <div>
+                                {{ registerForm.register(class='btn btn-default submit') }}
+                            </div>
+
+                            <div class="clearfix"></div>
+                            <div class="separator">
+                                <p class="change_link">已注册 ?
+                                    <a href="#signin" class="to_register"> 登陆 </a>
+                                </p>
+
+                                <div class="clearfix"></div>
+
+                                <div>
+                                    <span class="logo"><i class="fa fa-cube"></i> DockerM </span>
+                                    <p>Copyright © 2016 · All Rights Reserved </p>
+                                    <p> Mr9esx from <a href="http://www.nervgeek.com" target="_blank">NERVGEEK</a></p>
+                                </div>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

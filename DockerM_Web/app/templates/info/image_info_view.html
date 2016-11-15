@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block head %}
+ <script type="text/javascript">
+        $(document).ready(function() {
+            $('#images').addClass('current-page');
+        })
+</script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h3 style="float: left">{{ image_name[0] }}<br><small style="margin-left: 0px !important;">{{ image_id }}</small></h3>
+                    <div class="pull-right" style="margin-top: 30px;">
+                        <button type="button" class="btn btn-default"><i class="fa fa-refresh"></i></button>
+                        <div class="btn-group pull-right">
+                            <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button" aria-expanded="false"> 更多操作 <span class="caret"></span> </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#"><i class="fa fa-bell" style="padding-right: 10px"></i>警报设置</a></li>
+                                <li><a href="#"><i class="fa fa-file-text" style="padding-right: 10px"></i>容器配额</a></li>
+                                <li><a href="#" style="color: red;"><i class="fa fa-trash" style="padding-right: 10px"></i>删除</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div>
+                        Tags :
+                        {% for x in image_name %}
+                        <span class="label label-success">{{ x }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>镜像基础信息</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <ul class="legend list-unstyled list-float">
+                        <li>
+                            <dt>创建时间</dt>
+                            <dd id="network_rx_bytes">{{ info['Created'] }}</dd>
+                        </li>
+                        <li>
+                            <dt>CPU 支持</dt>
+                            <dd id="network_rx_speed">{{ info['Architecture'] }}</dd>
+                        </li>
+                        <li>
+                            <dt>镜像大小</dt>
+                            <dd id="network_tx_speed">{{ info['Size'] | imageSize }}</dd>
+                        </li>
+                        <li>
+                            <dt>Docker 版本</dt>
+                            <dd id="network_tx_bytes">{{ info['DockerVersion'] }}</dd>
+                        </li>
+                        <li>
+                            <dt>作者</dt>
+                            <dd id="network_rx_packets">{{ info['Author'] }}</dd>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-xs-12">
+            <div class="x_panel">
+                <div class="" role="tabpanel" data-example-id="togglable-tabs" style="padding: 0;">
+                    <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">镜像层</a></li>
+                        <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">镜像详细信息</a></li>
+                        <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">容器列表</a></li>
+                    </ul>
+                    <div id="myTabContent" class="tab-content" style="padding-top: 10px;">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                            <ul class="list-unstyled timeline widget">
+                                {% for history_info in history %}
+                                <li>
+                                    <div class="block">
+                                        <div class="block_content">
+                                            <h2 class="title">
+                                                <a>
+                                                    {% if history_info['Id'] != '<missing>' %}
+                                                        {{ history_info['Id'] | cutStr(7) }}
+                                                    {% else %}
+                                                        {{ history_info['Id'] }}
+                                                    {% endif %}
+                                                </a>
+                                            </h2>
+                                            <div class="byline">
+                                                <span>镜像大小 : {{ history_info['Size'] | imageSize }}</span>
+                                                <span style="margin-left: 10px;">创建时间 : {{ history_info['Created'] | strptime2time }}</span>
+                                            </div>
+                                            <p class="excerpt" style="margin-top: 12px;">{{ history_info['CreatedBy'] }}</p>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                            <textarea style="width: 100%;min-height:400px;">{{ info | showJsonPage }}</textarea>
+                            <a href="/image/download/inspect/{{ image_id }}" type="button" class="btn btn-default" style="margin-top: 10px;"><i class="fa fa-download"></i> 下载详细信息</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

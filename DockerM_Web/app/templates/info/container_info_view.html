@@ -1,0 +1,697 @@
+{% extends "base.html" %}
+{% block head %}
+    <script type="text/javascript" src="{{url_for('static',filename='lib/highstock/highstock.js')}}"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#containers').addClass('current-page');
+            function memSize(size,denominator) {
+                if (size >= 1000 && size < 1048576){
+                    return (size / denominator).toFixed(2) + " KB";
+                }
+                else if(size >= 1048576 && size < 1073741824){
+                    return (size / (denominator*1000)).toFixed(2) +" MB";
+                }
+                else if(size > 1073741824){
+                    return (size / (denominator*1000000)).toFixed(2) + " GB";
+                }
+                else{
+                    return size +" B";
+                }
+            };
+            $(function () {
+                Highcharts.setOptions({
+                    global: {
+                        useUTC: false
+                    },
+                    lang:{
+                        months:['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月','九月',  '十月','十一月', '十二月'],
+                        weekdays:['星期日',  '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+                        shortMonths : ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月','九月',  '十月','十一月', '十二月'],
+                        thousandsSep:''
+                    }
+                });
+                $.ajax( {
+                    url:'{{ request.url_root }}api/v1.0/container/getstatus/{{ container_id }}',
+                    type:'get',
+                    cache:false,
+                    dataType:'json',
+                    success:function(data) {
+                        data.reverse();
+                        var mem_data = new Array();
+                        var cpu_data = new Array();
+                        var net_down_data = new Array();
+                        var net_up_data = new Array();
+                        var Container_id = '{{ container_id }}';
+                        if(data.length === 0){
+                            var Mem_limit = 'None';
+                            drawMemPer(Container_id,mem_data,'None',Mem_limit);
+                            drawCpuPer(Container_id,cpu_data,'None');
+                            drawDownNetPer(Container_id,net_down_data,'None');
+                            drawUpNetPer(Container_id,net_up_data,'None');
+                            $("#cpu").html("None");
+                            $("#mem").html("None");
+                            $("#network_rx_bytes").html('None');
+                            $("#network_tx_bytes").html('None');
+                            $("#network_rx_packets").html('None');
+                            $("#network_tx_packets").html('None');
+                            $("#network_rx_speed").html('None');
+                            $("#network_tx_speed").html('None');
+                        }else{
+                            var max = data.length-1;
+                            var Mem_limit = memSize(parseInt(data[max].memory_limit),1000);
+                            for (var i=0;i<data.length;i++){
+                                var mem_tmp = new Array();
+                                var cpu_tmp = new Array();
+                                var net_down_tmp = new Array();
+                                var net_up_tmp = new Array();
+                                mem_tmp.push(parseInt(data[i].collect_time)*1000);
+                                mem_tmp.push(data[i].memory_percent);
+                                cpu_tmp.push(parseInt(data[i].collect_time)*1000);
+                                cpu_tmp.push(data[i].cpu_percent);
+                                net_down_tmp.push(parseInt(data[i].collect_time)*1000);
+                                net_down_tmp.push(parseInt(data[i].rx_speed));
+                                net_up_tmp.push(parseInt(data[i].collect_time)*1000);
+                                net_up_tmp.push(parseInt(data[i].tx_speed));
+                                mem_data.push(mem_tmp);
+                                cpu_data.push(cpu_tmp);
+                                net_down_data.push(net_down_tmp);
+                                net_up_data.push(net_up_tmp);
+                            }
+                            drawMemPer(Container_id,mem_data,'容器内存使用率',Mem_limit,cpu_data);
+                            drawCpuPer(Container_id,cpu_data,'容器处理器使用率');
+                            drawNetwrok(Container_id,net_down_data,net_up_data,'容器网络上下行速率');
+                            /*
+                            * 如果使用率达到60%~80%，改成黄色，大于80%，改成红色，其余一律绿色。
+                            * */
+                            if(data[max].cpu_percent >= 60 && data[max].cpu_percent < 80){
+                                $("#cpu_bar").addClass('bg-orange');
+                            }else if(data[max].cpu_percent >= 80 && data[max].cpu_percent <= 100){
+                                $("#cpu_bar").addClass('bg-red');
+                            }else if(data[max].cpu_percent < 60 && data[max].cpu_percent >= 0){
+                                $("#cpu_bar").addClass('bg-green');
+                            }
+                            if(data[max].memory_percent > 60 && data[max].memory_percent < 80){
+                                $("#mem_bar").addClass('bg-orange');
+                            }else if(data[max].memory_percent >= 80){
+                                $("#mem_bar").addClass('bg-red');
+                            }else{
+                                $("#mem_bar").addClass('bg-green');
+                            }
+                            $("#cpu_bar").css("width",data[max].cpu_percent+'%');
+                            $("#cpu_per").text(data[max].cpu_percent);
+
+                            $("#mem_bar").css("width",data[max].memory_percent+'%');
+                            $("#mem_num").html(memSize(data[max].memory_usage,1000));
+                            $("#mem_per").html(data[max].memory_percent);
+
+                            $("#network_rx_bytes").html(memSize(data[max].rx_bytes,1000));
+                            $("#network_tx_bytes").html(memSize(data[max].tx_bytes,1000));
+                            $("#network_rx_packets").html(data[max].rx_packets);
+                            $("#network_tx_packets").html(data[max].tx_packets);
+                            $("#network_rx_speed").html(memSize(data[max].rx_speed,1000)+"/s");
+                            $("#network_tx_speed").html(memSize(data[max].tx_speed,1000)+"/s");
+                        }
+                    },
+                    error : function() {
+                        alert('ok');
+                    }
+                });
+                function drawMemPer(Container_id,data,title,Mem_limit,data2){
+                    $('#container_mem_per').highcharts('StockChart', {
+                        rangeSelector : {
+                            selected : 1
+                        },credits:{
+                             enabled:false // 禁用版权信息
+                        },xAxis: {
+                            labels: {
+                                format: '{value:%m-%d %H:%M:%S}',
+                            }
+                        },
+                        title : {
+                            text: title,
+                            align: 'left',
+                            style: {
+                                "color": "#000",
+                                "font-size":"14px",
+                                "font-family":"微软雅黑",
+                                "font-weight":"normal"
+                            },
+                            x: 0,
+                            y: 10
+                        },
+                        subtitle: {
+                            text:'内存上限 : '+Mem_limit,
+                            align: 'right',
+                            style: {
+                                "color": "#000",
+                                "font-size":"10px",
+                                "font-family":"微软雅黑",
+                                "font-weight":"normal"
+                            },
+                            x: -18,
+                            y: 25
+                        },labels: {
+                            style: {
+                                "color": "#000",
+                                "font-size":"10px",
+                                "font-family":"微软雅黑",
+                                "font-weight":"normal"
+                            },
+                            items: [{
+                                html:  '容器短ID : '+Container_id.substring(0,12),
+                                style: {
+                                    left: '0',
+                                    top: '-32px',
+                                }
+                            }]
+                        },
+                        xAxis:{
+                            gridLineWidth:1,
+                        },
+                        yAxis: {
+                            min: 0,
+                            minRange: 1,
+                            gridLineWidth:1,
+                            title: {
+                                text: '内存使用率 (%)',
+                                style: {
+                                    "color": "#000",
+                                    "font-size":"12px",
+                                    "font-family":"微软雅黑",
+                                    "font-weight":"normal"
+                                }
+                            }
+                        },
+                        scrollbar: {
+                            enabled: false
+                        },
+                        navigator:{
+                            enabled: false
+                        },
+                        rangeSelector : {
+                            enabled : false,
+                            selected : 1,
+                            inputEnabled : false
+                        },
+                        series : [{
+                            name : '使用率',
+                            data : data,
+                            type : 'spline',
+                            color: '#E74C3C',
+                            lineWidth: 1.4,
+                            marker: {
+                                fillColor: 'white',
+                                lineWidth: 2,
+                                lineColor: '#E74C3C'
+                            },
+                            tooltip: {
+                                headerFormat: '容器 内存 占用率<br /><br />',
+                                pointFormatter: function() {
+                                    return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)+'<br />'+this.series.name+': <b>'+this.y+' %</b>'
+                                }
+                            }
+                        }]
+                    });
+                }
+                function drawCpuPer(Container_id,data,title){
+                    $('#container_cpu_per').highcharts('StockChart', {
+                        rangeSelector : {
+                            selected : 10
+                        },credits:{
+                            enabled:false
+                        },
+                        title : {
+                            text: title,
+                            align: 'left',
+                            style: {
+                                "color": "#000",
+                                "font-size":"14px",
+                                "font-family":"微软雅黑",
+                                "font-weight":"normal"
+                            },
+                            x: 0,
+                            y: 10
+                        },
+                        labels: {
+                            style: {
+                                "color": "#000",
+                                "font-size":"10px",
+                                "font-family":"微软雅黑",
+                                "font-weight":"normal"
+                            },
+                            items: [{
+                                html:  '容器短ID : '+Container_id.substring(0,12),
+                                style: {
+                                    left: '0',
+                                    top: '-20px',
+                                }
+                            }]
+                        },
+                        xAxis:{
+                            gridLineWidth:1,
+                        },
+                        yAxis: {
+                            min: 0,
+                            minRange: 1,
+                            gridLineWidth:1,
+                            title: {
+                                text: '处理器使用率 (%)',
+                                style: {
+                                    "color": "#000",
+                                    "font-size":"12px",
+                                    "font-family":"微软雅黑",
+                                    "font-weight":"normal"
+                                }
+                            }
+                        },
+                        scrollbar: {
+                            enabled: false
+                        },
+                        navigator:{
+                            enabled: false
+                        },
+                        rangeSelector : {
+                            enabled : false,
+                            selected : 1,
+                            inputEnabled : false
+                        },
+                        plotOptions: {
+
+                        },
+                        series : [{
+                            name : '使用率',
+                            data : data,
+                            color:'#26B99A',
+                            type : 'spline',
+                            lineWidth: 1.4,
+                            marker: {
+                                fillColor: 'white',
+                                lineWidth: 2,
+                                lineColor: '#26B99A'
+                            },
+                            tooltip: {
+                                headerFormat: '容器 CPU 占用率<br /><br />',
+                                pointFormatter: function() {
+                                    return '<br />'+Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)+'<br />'+this.series.name+': <b>'+this.y+' %</b>'
+                                }
+                            }
+                        }]
+                    });
+                }
+                function drawNetwrok(Container_id,download_data,upload_data,title){
+                    $('#container_network').highcharts('StockChart', {
+                        rangeSelector : {
+                            selected : 1
+                        },credits:{
+                             enabled:false
+                        },
+                        xAxis:{
+                            gridLineWidth:1,
+                        },
+                        title : {
+                            text: title,
+                            align: 'left',
+                            gridLineWidth:1,
+                            style: {
+                                "color": "#000",
+                                "font-size":"14px",
+                                "font-family":"微软雅黑",
+                                "font-weight":"normal"
+                            },
+                            x: 0,
+                            y: 10
+                        },
+                        labels: {
+                            style: {
+                                "color": "#000",
+                                "font-size":"10px",
+                                "font-family":"微软雅黑",
+                                "font-weight":"normal"
+                            },
+                            items: [{
+                                html:  '容器短ID : '+Container_id.substring(0,12),
+                                style: {
+                                    left: '0',
+                                    top: '-20px',
+                                }
+                            }]
+                        },
+                        yAxis: {
+                            min: 0,
+                            minRange: 1,
+                            title: {
+                                text: '上下行速率 (bytes/s)',
+                                style: {
+                                    "color": "#000",
+                                    "font-size":"12px",
+                                    "font-family":"微软雅黑",
+                                    "font-weight":"normal"
+                                }
+                            }
+                        },
+                        scrollbar: {
+                            enabled: false
+                        },
+                        navigator:{
+                            enabled: false
+                        },
+                        rangeSelector : {
+                            enabled : false,
+                            selected : 1,
+                            inputEnabled : false
+                        },
+                        series : [{
+                            name : '<span style="color:#3B7C8A">下行速率</span>',
+                            data : download_data,
+                            type : 'spline',
+                            color: '#3B7C8A',
+                            lineWidth: 2,
+                            marker: {
+                                fillColor: 'white',
+                                lineWidth: 2,
+                                lineColor: '#3B7C8A'
+                            },
+                            tooltip: {
+                                headerFormat: '容器网络上下行占用率<br /><br />',
+                                pointFormatter: function() {
+                                    return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)+'<br />'+this.series.name+': <b style="color:#3B7C8A">'+memSize(this.y,1000)+'</b>'
+                                }
+                            }
+                        },{
+                            name : '<span style="color:#3498DB">上行速率</span>',
+                            data : upload_data,
+                            type : 'spline',
+                            color: '#3498DB',
+                            lineWidth: 2,
+                            marker: {
+                                fillColor: 'white',
+                                lineWidth: 2,
+                                lineColor: '#3498DB'
+                            },
+                            tooltip: {
+                                pointFormatter: function() {
+                                    return '<br />'+this.series.name+': <b style="color:#3498DB">'+memSize(this.y,1000)+'</b>'
+                                }
+                            }
+                        }]
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}
+{% set netInfo = info['NetworkSettings']['Networks'] | formatNetwrokJson %}
+{% set portInfo = info['NetworkSettings']['Ports'] | formatPortsJson( host_id ) %}
+{% block content %}
+        <div class="col-md-12 col-xs-12">
+            <div class="x_panel">
+                <h3 style="float: left">{{ container_name }}<br><small style="margin-left: 0px !important;">{{ container_id }}</small></h3>
+                <div class="pull-right" style="margin-top: 30px;">
+                    <button type="button" class="btn btn-default refreshbtn"><i class="fa fa-refresh"></i></button>
+                    <div class="btn-group pull-right">
+                        <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button" aria-expanded="false"> 更多操作 <span class="caret"></span> </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#"><i class="fa fa-bell" style="padding-right: 10px"></i>警报设置</a></li>
+                            <li><a href="#"><i class="fa fa-file-text" style="padding-right: 10px"></i>容器配额</a></li>
+                            <li><a href="#" style="color: red;"><i class="fa fa-trash" style="padding-right: 10px"></i>删除</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 class="x_title_h2">容器目前状态</h2>
+                    <ul class="nav navbar-right panel_toolbox" style="min-width:46px;">
+                          <li>
+                              <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li>
+                              <a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content" style="text-align: center;">
+                    <div>
+                        {% if status == 'running' %}
+                            <i class="fa fa-check-circle fa-fw fa-4x icon-success"></i>
+                            <div>正在运行</div>
+                        {% elif status == 'exited' %}
+                            <i class="fa fa-times-circle fa-fw fa-4x icon-error"></i>
+                            <div>已关闭</div>
+                        {% endif %}
+                        <div style="margin-top: 2px;">
+                            {% if status == 'running' %}
+                                已运行 : {{ info['State']['StartedAt'] | nowRunTime() }}
+                            {% elif status == 'deleted' %}
+                                None
+                            {% elif (status != 'running' or status != 'stopping') or (status != 'paused' or status != 'unpause') %}
+                                运行时长 : {{ info['State']['StartedAt'] | stopRunTime(info['State']['FinishedAt']) }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <td class="project_progress" id="cpu_box">
+                        <small>处理器占用率 : <span id="cpu_per">Loading</span> %</small>
+                        <div class="progress progress_sm">
+                            <div id="cpu_bar" class="progress-bar" role="progressbar" data-transitiongoal=""></div>
+                        </div>
+                    </td>
+                    <td class="project_progress" id="mem_box">
+                        <small>内存占用率 : <span id="mem_per">Loading</span> % <br /> <span>内存占用量 : <span id="mem_num">Loading</span></span></small>
+                        <div class="progress progress_sm">
+                            <div id="mem_bar" class="progress-bar bg-green" role="progressbar" data-transitiongoal=""></div>
+                        </div>
+                    </td>
+                    {% if status == 'running' %}
+                        <button type="button" class="btn btn-danger"><i class="fa fa-stop"></i> 关闭</button>
+                        <button type="button" class="btn btn-warning"><i class="fa fa-pause"></i> 暂停</button>
+                    {% elif status == 'exited' %}
+                        <button type="button" class="btn btn-success"><i class="fa fa-play"></i> 启动</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 class="x_title_h2">容器基础信息</h2>
+                    <ul class="nav navbar-right panel_toolbox" style="min-width:46px;">
+                      <li>
+                          <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li>
+                          <a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <ul class="legend list-unstyled">
+                        <li><dt>创建时间</dt><dd>{{ info['Created'] }}</dd></li>
+                        {% if status == 'exited' %}
+                            <li>
+                                <dt>停止于</dt>
+                                <dd>{{ info['State']['FinishedAt'] }}</dd>
+                            </li>
+                        {% elif status == 'running' %}
+                            <li>
+                                <dt>运行于</dt>
+                                <dd>{{ info['State']['StartedAt'] }}</dd>
+                            </li>
+                        {% endif %}
+                        <li><dt>所用镜像</dt>
+                    <dd><a href="/image/info/{{ info['Image'] | cutStr(7) }}">{{ info['Config']['Image'] }}</a></dd></li>
+                        <li><dt>链接容器</dt>
+                    <dd>
+                        {% if info['HostConfig']['Links']==None %}
+                        无链接容器
+                        {% else %}
+                            {% for info in info['HostConfig']['Links'] %}
+                                {{ info }}
+                            {% endfor %}
+                        {% endif %}
+                    </dd></li>
+                        <li><dt>IP 地址</dt><dd>{% for d in netInfo %}{{ d['IPAddress'] }}&nbsp;&nbsp;{% endfor %}</dd></li>
+                        <li><dt>退出码</dt><dd>{{ info['State']['ExitCode'] }}</dd></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 class="x_title_h2">容器数据统计</h2>
+                    <ul class="nav navbar-right panel_toolbox" style="min-width:46px;">
+                          <li>
+                              <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li>
+                              <a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <ul class="legend list-unstyled">
+                        <li>
+                            <dt>下行速率</dt>
+                            <dd id="network_rx_speed">Loading</dd>
+                        </li>
+                        <li>
+                            <dt>上行速率</dt>
+                            <dd id="network_tx_speed">Loading</dd>
+                        </li>
+                        <li>
+                            <dt>接收数据量</dt>
+                            <dd id="network_rx_bytes">Loading</dd>
+                        </li>
+                        <li>
+                            <dt>发送数据量</dt>
+                            <dd id="network_tx_bytes">Loading</dd>
+                        </li>
+                        <li>
+                            <dt>个接收数据包</dt>
+                            <dd id="network_rx_packets">Loading</dd>
+                        </li>
+                        <li>
+                            <dt>个发送数据包</dt>
+                            <dd id="network_tx_packets">Loading</dd>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+            <div class="x_panel" >
+                <div class="x_title">
+                    <h2 class="x_title_h2">容器操作历史</h2>
+                    <ul class="nav navbar-right panel_toolbox" style="min-width:46px;">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <ul class="list-unstyled top_profiles scroll-view">
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb-sm">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body-sm">
+                                <p><a class="title" href="#">YYF</a> <strong class="icon-success">启动 </strong> 容器</p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb-sm">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body-sm">
+                                <p><a class="title" href="#">ZSMJ</a> <strong class="icon-error">关闭 </strong> 容器</p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb-sm">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body-sm">
+                                <p><a class="title" href="#">iceice</a> <strong class="icon-success">启动 </strong> 容器</p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb-sm">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body-sm">
+                                <p><a class="title" href="#">Bruning</a> <strong class="icon-success">启动 </strong> 容器</p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                        <li class="media event">
+                            <a class="pull-left border-green profile_thumb-sm">
+                                <i class="fa fa-user green"></i>
+                            </a>
+                            <div class="media-body-sm">
+                                <p><a class="title" href="#">Bruning</a> <strong class="icon-success">启动 </strong> 容器</p>
+                                <p> <small>2016-10-28 13:57:43</small></p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-xs-12">
+            <div class="x_panel">
+                <div class="" role="tabpanel" data-example-id="togglable-tabs" style="padding: 0;">
+                    <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">容器监控</a></li>
+                        <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">网络信息</a></li>
+                        <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">环境变量</a></li>
+                        <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">容器详细信息</a></li>
+                        <li role="presentation" class=""><a href="#tab_content5" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">操作历史</a></li>
+                        <li role="presentation" class=""><a href="#tab_content6" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">容器日志</a></li>
+                    </ul>
+                    <div id="myTabContent" class="tab-content" style="padding-top: 10px;">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                            <div id="container_cpu_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                            <div id="container_mem_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                            <div id="container_network" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                        {% for d in netInfo %}
+                            <div class="col-md-3 col-xs-12 widget widget_tally_box">
+                                <div class="x_panel">
+                                    <div class="x_title"  style="text-align: center !important;">
+                                        <div style="font-size: 20px">{{ d['Network_name'] }}</div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                    <div class="x_content">
+                                        <div><b>IP 地址</b> : <span class="pull-right">{{ d['IPAddress'] }}</span></div>
+                                        <div style="margin-top: 10px;"><b>物理地址</b> : <span class="pull-right">{{ d['MacAddress'] }}</span></div>
+                                        <div style="margin-top: 10px;"><b>网关地址</b> : <span class="pull-right">{{ d['Gateway'] }}</span></div>
+                                        <div style="margin-top: 10px;"><b>子网掩码</b> : <span class="pull-right">{{ d['IPPrefixLen'] }}</span></div>
+                                        {% for x in portInfo %}
+                                            <div class="port-mapped">
+                                                <b>{{ x['inside_port'] }}</b>
+
+                                                <a href="{{ x['link'] }}" target="_blank" style="text-decoration: none;">{{ x['outside_port'] }}</a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab">
+                            <blockquote>
+                            {% for info in info['Config']['Env'] %}
+                                {{ info }}<br>
+                            {% endfor %}
+                            </blockquote>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">
+                            <textarea style="width: 100%;min-height:400px;">{{ info | showJsonPage }}</textarea>
+                            <a href="/container/download/inspect/{{ container_id }}" type="button" class="btn btn-default" style="margin-top: 10px;"><i class="fa fa-download"></i> 下载详细信息</a>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content5" aria-labelledby="profile-tab">
+                            操作历史
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content6" aria-labelledby="profile-tab">
+                            容器日志
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

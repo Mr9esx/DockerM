@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block head %}
+<script>
+    $(document).ready(function() {
+        $('#hosts').addClass('current-page');
+    });
+</script>
+{% endblock %}
+{% block content %}
+    <div class="page-title">
+        <div class="title_left">
+            <h3>主机列表 <small>Hosts List</small></h3>
+        </div>
+
+        <div class="title_right">
+            <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="查找主机">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button"><i style="position: relative;top:-1px;left: -5px;" class="fa fa-search"></i>搜索</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="row">
+
+        <div class="clearfix"></div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h3 style="float: left;margin-top: 0px;">全部主机 <small>All Hosts</small></h3>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#">Settings 1</a></li>
+                                <li><a href="#">Settings 2</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">主机名称</th>
+                                <th style="width: 15%">系统版本</th>
+                                <th style="width: 10%">Docker 版本</th>
+                                <th style="width: 15%">CPU 信息</th>
+                                <th style="width: 15%;">其他硬件信息</th>
+                                <th style="width: 15%">创建时间</th>
+                                <th style="width: 10%">主机 IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for info in hostsList %}
+                            <tr>
+                                <td>
+                                    <a href="/host/info/{{ info['host_id'] }}">{{ info['host_name'] }}</a>
+                                    <br />
+                                    <small>{{ info['host_id'] }}</small>
+                                </td>
+                                <td>Ubuntu 15.10 amd64</td>
+                                <td>Docker 1.6.1</td>
+                                <td>Intel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz</td>
+                                <td>内存容量 : 16 G <br>硬盘容量 : 40 G</td>
+                                <td>{{ info['create_time'] }}</td>
+                                <td>{{ info['host_ip'] }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <td colspan="{% if is_all %}7{% else %}8{% endif %}" style="padding-top: 12px;">
+                                <ul class="nav navbar-right panel_toolbox">
+                                    <li>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if pagination.has_prev %}
+                                                <a href="/containers/all" class="btn btn-default" type="button"><i class="fa fa-angle-double-left"></i></a>
+                                                <a href="/containers/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-left"></i></a>
+                                                <a href="/containers/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button">{{ pagination.prev_num }}</a>
+                                            {% endif %}
+                                            <a class="btn btn-info" type="button">{{ pagination.page }}</a>
+                                            {% if pagination.has_next %}
+                                                <a href="/containers/all?page={{ pagination.next_num }}" class="btn btn-default" type="button">{{ pagination.next_num }}</a>
+                                                <a href="/containers/all?page={{ pagination.next_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
+                                                <a href="/containers/all?page={{ pagination.pages }}" class="btn btn-default" type="button"><i class="fa fa-angle-double-right"></i></a>
+                                            {% else %}
+                                                <a class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
