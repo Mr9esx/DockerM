@@ -43,3 +43,14 @@ GetQueueInfo2ControlDocker.py 是操作 Docker 的 Agent 。通过监听 RabbitM
 
 GetQueueInfo2SaveDatabase.py 是把 RabbitMQ 中的信息写入数据库的 Agent 。<br>
 是保证 DockerStateMonitoring.py 、 UpdateDockerInfo.py 两个 Agent 正常运作的基础。
+
+<br>
+##下版本规划
+添加网页操作日志记录。
+网络信息界面的实现。
+
+<br>
+思考：
+第一次做管理平台，毫无经验，没有广泛的知识储备，目前平台仅处于能运行的情况。<br>
+趁着双十一买了本《 Python 自动化运维技术与最佳实践 》，我感觉我应该从构建一个 CMDB 平台，例如先使用 SaltStack 管理主机，然后再管理 Docker 平台，从上至下。<br>
+DockerM是一个练手的平台，可能从根本架构上就存在非常大的问题，希望有这方面经验的大大能和我交流一下，传授一下经验。
