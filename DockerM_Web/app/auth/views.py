@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
-from flask import render_template, session, redirect, url_for,flash,g,request
+from flask import render_template, session, redirect, url_for, flash, g, request
 from flask_login import login_user, logout_user, current_user, login_required
 from . import dockermAuth
 from .. import lm
-from .forms import LoginForm,RegisterForm
-from ..lib.dbModel import User,checkUserIsRegister,checkEmailIsRegister,createUser
+from .forms import LoginForm, RegisterForm
+from ..lib.dbModel import User, checkUserIsRegister, checkEmailIsRegister, createUser
 from werkzeug.security import check_password_hash
 
 @dockermAuth.before_request
