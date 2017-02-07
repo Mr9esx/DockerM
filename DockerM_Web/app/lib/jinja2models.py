@@ -1,5 +1,9 @@
 # -*- coding:utf-8 -*-
-import json,time,datetime
+import json
+import time
+import datetime
+import re
+
 
 # 格式化显示在JSON信息页面的json信息
 def showJsonPage(jsonstr):
@@ -24,9 +28,18 @@ def formatNetwrokJson(jsonstr):
     return tmp
 
 
-# 格式化端口json信息
+"""验证 IP 地址合法性"""
+def validataipaddress(ipaddress):
+    validata = re.compile('^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$')
+    if validata.match(ipaddress):
+        return True
+    else:
+        return False
+
+
+    # 格式化端口json信息
 def formatPortsJson(jsonstr, host_id):
-    from dbModel import getHostInfo
+    from dbController import getHostInfo
     tmp = []
     link = 'javascript:;'
     outside_port = None
@@ -82,14 +95,17 @@ def imageSize(size):
 
 # 获取镜像名称
 def getImageName(image_name):
-    tmp = image_name.rfind(':')
-    return image_name[:tmp]
+    return json.loads(image_name)[0]
+    # tmp = image_name.rfind(':')
+    # return image_name[:tmp]
 
 
 # 获取镜像版本
 def getImageVer(image_name):
-    tmp = image_name.rfind(':')
-    return image_name[tmp + 1:]
+    # tmp = image_name.rfind(':')
+    # return image_name[tmp + 1:]
+    tmp = json.loads(image_name)[0]
+    return tmp[tmp.rfind(':') + 1:]
 
 #时间戳转标准时间
 def strptime2time(strptime):

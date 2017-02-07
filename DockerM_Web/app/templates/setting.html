@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block head %}
+    <!-- iCheck -->
+    <link href="{{ url_for('static',filename='lib/iCheck/skins/flat/green.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static',filename='lib/iCheck/icheck.min.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#setting').addClass('current-page');
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="page-title">
+        <div class="title_left" style="margin-bottom: 20px;">
+            <h3>设置 <small>Settings</small></h3>
+            {{ tmp }}
+        </div>
+
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Rabbit MQ</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <br />
+                    <form id="demo-form2" method="post" action="/setting/" role="form" data-parsley-validate class="form-horizontal form-label-left">
+                    {{ RabbitForm.csrf_token }}
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">主机地址<span class="required">*</span></label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            {{ RabbitForm.RABBIT_HOST(id='rabbitmq-host',placeholder='地址',class='form-control col-md-7 col-xs-12') }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">Rabbit MQ 用户名<span class="required">*</span></label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            {{ RabbitForm.RABBIT_HOST_USERNAME(id='rabbitmq-username',placeholder='用户名',class='form-control col-md-7 col-xs-12') }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">Rabbit MQ 密码<span class="required">*</span></label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            {{ RabbitForm.RABBIT_HOST_PASSWORD(id='rabbitmq-password',placeholder='密码',class='form-control col-md-7 col-xs-12') }}
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" class="btn btn-success">保存</button>
+                        </div>
+                    </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

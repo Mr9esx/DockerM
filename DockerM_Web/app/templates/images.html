@@ -36,7 +36,7 @@
                     {% if is_all %}
                         <h3 style="float: left;margin-top: 0px;">全部主机 <small>All Hosts</small></h3>
                     {% else %}
-                        <h3 style="float: left;margin-top: 0px;">{{ host_name }} <small>{{ host_id | cutStr(0,12) }}</small></h3>
+                        <h3 style="float: left;margin-top: 0px;">{{ saltstack_id }} <small>{{ saltstack_id }}</small></h3>
                     {% endif %}
                     <ul class="nav navbar-right panel_toolbox">
                         <li>
@@ -61,7 +61,7 @@
                                     <ul class="dropdown-menu">
                                             <li><a href="/images/all">全部主机</a></li>
                                         {% for info in host_list %}
-                                            <li><a href="/images/{{ info['host_id'] }}">{{ info['host_name'] }}</a></li>
+                                            <li><a href="/images/{{ info['saltstack_id'] }}">{{ info['saltstack_id'] }}</a></li>
                                         {% endfor %}
                                     </ul>
                                 </div>
@@ -70,7 +70,7 @@
                     </ul>
                     <div class="clearfix"></div>
                 </div>
-                <div class="x_content">
+                <div class="x_content" style="overflow: auto;">
                     <table class="table table-hover bulk_action">
                         <thead>
                             <tr>
@@ -94,26 +94,32 @@
                             </tr>
                         </thead>
                         <tbody>
+                        {% if image_list | length == 0 %}
+                            <tr><td colspan="8" style="text-align: center">无容器</td></tr>
+                        {% endif %}
                         {% for info in image_list %}
+
                             {% set json = info['json_info'] %}
                             <tr>
                                 <td class="a-center ">
                                     <input type="checkbox" class="flat" name="table_records">
                                 </td>
                                 <td>
-                                    <a href="/image/info/{{ info['image_id'] }}">{{ info['image_name'][0] | getImageName }}</a>
+                                    <a href="/image/info/{{ info['image_id'] }}">{{ info['image_name'] | getImageName }}</a>
                                     <br />
                                     <small>{{ info['image_id'] | cutStr(0,12) }}</small>
                                 </td>
-                                <td>{{ info['image_name'][0] | getImageVer }}</td>
+                                <td>{{ info['image_name'] | getImageVer }}</td>
                                 {% if is_all %}
                                     <td>
-                                        <a href="/host/info/{{ info['host_id'] }}">{{ info['host_name'] }}</a>
+                                        <i class="fa fa-spinner fa-spin fa-fw"></i>
+                                        <span class="sr-only">Loading...</span>
+                                        <a href="/host/info/{{ info['saltstack_id'] }}">{{ info['saltstack_id'] }}</a>
                                         <br />
-                                        <small>{{ info['host_id'] | cutStr(0,12) }}</small>
+                                        <small>{{ info['saltstack_id'] }}</small>
                                     </td>
                                 {% endif %}
-                                <td>{{ info['create_time'] }}</td>
+                                <td>{{ info['created_at'] }}</td>
                                 <td>{{ json['Size'] | imageSize }}</td>
                                 <td>
                                     <div class="btn-group" style="margin-top: 3px;min-width: 100px;">
@@ -157,12 +163,12 @@
                                                 {% if is_all %}
                                                     <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> 全部主机 <span class="caret"></span> </button>
                                                 {% else %}
-                                                    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> {{ host_name }} <span class="caret"></span> </button>
+                                                    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> {{ info['saltstack_id'] }} <span class="caret"></span> </button>
                                                 {% endif %}
                                                 <ul class="dropdown-menu">
                                                     <li><a href="/images/all">全部主机</a></li>
                                                     {% for info in host_list %}
-                                                        <li><a href="/images/{{ info['host_id'] }}">{{ info['host_name'] }}</a></li>
+                                                        <li><a href="/images/{{ info['saltstack_id'] }}">{{ info['saltstack_id'] }}</a></li>
                                                     {% endfor %}
                                                 </ul>
                                             </div>

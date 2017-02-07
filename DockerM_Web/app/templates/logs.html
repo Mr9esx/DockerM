@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block head %}
+    <!-- iCheck -->
+    <link href="{{ url_for('static',filename='lib/iCheck/skins/flat/green.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static',filename='lib/iCheck/icheck.min.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#logs').addClass('current-page');
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="page-title">
+        <div class="title_left">
+            <h3>操作日志 <small>Operation Logs</small></h3>
+        </div>
+
+        <div class="title_right">
+            <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="输入名称或ID查找镜像">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button"><i style="position: relative;top:-1px;left: -5px;" class="fa fa-search"></i>搜索</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    {% if is_all %}
+                        <h3 style="float: left;margin-top: 0px;">全部主机 <small>All Hosts</small></h3>
+                    {% else %}
+                        <h3 style="float: left;margin-top: 0px;">{{ host_name }} <small>{{ host_id | cutStr(0,12) }}</small></h3>
+                    {% endif %}
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li>
+                            <div class="btn-group btn-group-sm">
+                                {% if pagination.has_prev %}
+                                    <a href="/logs/all" class="btn btn-default" type="button"><i class="fa fa-angle-double-left"></i></a>
+                                    <a href="/logs/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-left"></i></a>
+                                    <a href="/logs/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button">{{ pagination.prev_num }}</a>
+                                {% endif %}
+                                <a class="btn btn-info" type="button">{{ pagination.page }}</a>
+                                {% if pagination.has_next %}
+                                    <a href="/logs/all?page={{ pagination.next_num }}" class="btn btn-default" type="button">{{ pagination.next_num }}</a>
+                                    <a href="/logs/all?page={{ pagination.next_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
+                                    <a href="/logs/all?page={{ pagination.pages }}" class="btn btn-default" type="button"><i class="fa fa-angle-double-right"></i></a>
+                                {% else %}
+                                    <a class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
+                                {% endif %}
+                                <div class="btn-group btn-group-sm">
+                                    {% if is_all %}
+                                        <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> 全部主机 <span class="caret"></span> </button>
+                                    {% else %}
+                                        <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> {{ host_name }} <span class="caret"></span> </button>
+                                    {% endif %}
+                                    <ul class="dropdown-menu">
+                                            <li><a href="/logs/all">全部主机</a></li>
+                                        {% for info in host_list %}
+                                            <li><a href="/logs/{{ info['host_id'] }}">{{ info['host_name'] }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="x_content">
+                    <table class="table table-hover bulk_action">
+                        <div id="myTabContent" class="tab-content" style="padding-top: 10px;">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                            <ul class="list-unstyled timeline widget">
+                                {% for logs_info in logs_list %}
+                                <li>
+                                    <div class="block">
+                                        <div class="block_content">
+                                            <h2 class="title">
+                                                <a>
+                                                    {% if logs_info['result'] == 'success' %}
+                                                        <i class="fa fa-check-circle green"></i>
+                                                    {% else %}
+                                                        <i class="fa fa-times-circle red"></i>
+                                                    {% endif %}
+                                                    {{ logs_info['operation_user'] }}
+                                                    在
+                                                    {{ logs_info['host_id'] }}
+                                                    执行
+                                                    {% if logs_info['operation_type'] == 'start_container' %}
+                                                        启动容器
+                                                    {% elif logs_info['operation_type'] == 'stop_container' %}
+                                                        关闭容器
+                                                    {% endif %}
+                                                    <a target="_blank" href="/container/info/{{ logs_info['operation_id'] }}">{{ logs_info['operation_id'] | cutStr(0,12) }}</a>
+                                                    {% if logs_info['result'] == 'success' %}
+                                                        成功
+                                                    {% else %}
+                                                        失败
+                                                    {% endif %}
+                                                </a>
+                                            </h2>
+                                            <div class="byline">
+                                                <span>操作时间 : {{ logs_info['operation_time'] }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                            <textarea style="width: 100%;min-height:400px;">123</textarea>
+                        </div>
+                    </div>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

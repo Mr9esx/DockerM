@@ -1,15 +1,4 @@
 {% extends "base.html" %}
-{% block head %}
-    <!-- iCheck -->
-    <link href="{{ url_for('static',filename='lib/iCheck/skins/flat/green.css') }}" rel="stylesheet">
-    <script src="{{ url_for('static',filename='lib/iCheck/icheck.min.js') }}"></script>
-    <script src="{{ url_for('static',filename='js/control.js') }}"></script>
-    <script>
-        $(document).ready(function() {
-            $('#containers').addClass('current-page');
-        });
-    </script>
-{% endblock %}
 {% block content %}
     <div class="page-title">
         <div class="title_left">
@@ -37,67 +26,73 @@
                     {% if is_all %}
                         <h3 style="float: left;margin-top: 0px;">全部主机 <small>All Hosts</small></h3>
                     {% else %}
-                        <h3 style="float: left;margin-top: 0px;">{{ host_name }} <small>{{ host_id | cutStr(0,12) }}</small></h3>
+                        <h3 style="float: left;margin-top: 0px;">{{ saltstack_id }} <small>{{ saltstack_id }}</small></h3>
                     {% endif %}
                     <ul class="nav navbar-right panel_toolbox">
-                        <li>
+                        <button type="button" class="btn btn-sm btn-info" id="addContainer_model_btn" style="margin-top:4px;">创建容器</button>
+                        <div class="btn-group btn-group-sm">
+                            {% if pagination.has_prev %}
+                                <a href="/containers/all" class="btn btn-default" type="button"><i class="fa fa-angle-double-left"></i></a>
+                                <a href="/containers/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-left"></i></a>
+                                <a href="/containers/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button">{{ pagination.prev_num }}</a>
+                            {% endif %}
+                            <a class="btn btn-info" type="button">{{ pagination.page }}</a>
+                            {% if pagination.has_next %}
+                                <a href="/containers/all?page={{ pagination.next_num }}" class="btn btn-default" type="button">{{ pagination.next_num }}</a>
+                                <a href="/containers/all?page={{ pagination.next_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
+                                <a href="/containers/all?page={{ pagination.pages }}" class="btn btn-default" type="button"><i class="fa fa-angle-double-right"></i></a>
+                            {% else %}
+                                <a class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
+                            {% endif %}
                             <div class="btn-group btn-group-sm">
-                                {% if pagination.has_prev %}
-                                    <a href="/containers/all" class="btn btn-default" type="button"><i class="fa fa-angle-double-left"></i></a>
-                                    <a href="/containers/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-left"></i></a>
-                                    <a href="/containers/all?page={{ pagination.prev_num }}" class="btn btn-default" type="button">{{ pagination.prev_num }}</a>
-                                {% endif %}
-                                <a class="btn btn-info" type="button">{{ pagination.page }}</a>
-                                {% if pagination.has_next %}
-                                    <a href="/containers/all?page={{ pagination.next_num }}" class="btn btn-default" type="button">{{ pagination.next_num }}</a>
-                                    <a href="/containers/all?page={{ pagination.next_num }}" class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
-                                    <a href="/containers/all?page={{ pagination.pages }}" class="btn btn-default" type="button"><i class="fa fa-angle-double-right"></i></a>
+                                {% if is_all %}
+                                    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> 全部主机 <span class="caret"></span> </button>
                                 {% else %}
-                                    <a class="btn btn-default" type="button"><i class="fa fa-angle-right"></i></a>
+                                    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> {{ saltstack_id }} <span class="caret"></span> </button>
                                 {% endif %}
-                                <div class="btn-group btn-group-sm">
-                                    {% if is_all %}
-                                        <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> 全部主机 <span class="caret"></span> </button>
-                                    {% else %}
-                                        <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> {{ host_name }} <span class="caret"></span> </button>
-                                    {% endif %}
-                                    <ul class="dropdown-menu">
-                                            <li><a href="/containers/all">全部主机</a></li>
-                                        {% for info in host_list %}
-                                            <li><a href="/containers/{{ info['host_id'] }}">{{ info['host_name'] }}</a></li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
+                                <ul class="dropdown-menu">
+                                        <li><a href="/containers/all">全部主机</a></li>
+                                    {% for info in host_list %}
+                                        <li><a href="/containers/{{ info['saltstack_id'] }}">{{ info['saltstack_id'] }}</a></li>
+                                    {% endfor %}
+                                </ul>
                             </div>
-                        </li>
+                        </div>
                     </ul>
                     <div class="clearfix"></div>
                 </div>
-                <div class="x_content">
+                <div class="x_content" style="overflow: auto;">
                     <table class="table table-hover bulk_action">
                         <thead>
                             <tr>
                                 <th width="40">
                                     <input type="checkbox" id="check-all" class="flat">
                                 </th>
-                                <th width="60">容器状态</th>
+                                <th width="65" style="text-align:center">状态</th>
                                 {% if is_all %}
-                                    <th style="width: 25%">容器名称</th>
-                                    <th style="width: 25%">所属主机</th>
-                                    <th style="width: 10%">所用镜像</th>
-                                    <th style="width: 10%">创建时间</th>
-                                    <th style="width: 10%">容器 IP</th>
-                                    <th style="width: 10%">操作</th>
+                                    <th style="max-width: 20%">容器名称</th>
+                                    <th style="max-width: 20%">所属主机</th>
+                                    <th style="max-width: 10%">所用镜像</th>
+                                    <th style="max-width: 15%">上次启动</th>
+                                    <th style="max-width: 15%">创建时间</th>
+                                    <th style="max-width: 10%">容器 IP</th>
+                                    <th style="max-width: 10%">操作</th>
                                 {% else %}
-                                    <th style="width: 25%">容器名称</th>
-                                    <th style="width: 25%">所用镜像</th>
-                                    <th style="width: 15%">创建时间</th>
-                                    <th style="width: 15%">容器 IP</th>
-                                    <th style="width: 10%">操作</th>
+                                    <th style="max-width: 30%">容器名称</th>
+                                    <th style="max-width: 15%">所用镜像</th>
+                                    <th style="max-width: 15%">上次启动</th>
+                                    <th style="max-width: 15%">创建时间</th>
+                                    <th style="max-width: 15%">容器 IP</th>
+                                    <th style="max-width: 10%">操作</th>
                                 {% endif %}
                             </tr>
                         </thead>
                         <tbody>
+
+                        {% if (container_list | length) == 0 %}
+                            <td colspan="{% if is_all %}9{% else %}8{% endif %}" style="text-align: center;font-weight: bold">无主机</td>
+                        {% endif %}
+
                         {% for info in container_list %}
                             {% set json = info['json_info'] %}
                             <tr>
@@ -105,31 +100,47 @@
                                     <input type="checkbox" class="flat" name="table_records">
                                 </td>
                                 <td>
-                                    {% if info['status'] == 'running' %}
+                                    {% if json['State']['Status'] == 'running' %}
                                         <i class="fa fa-check-circle fa-fw fa-3x icon-success"></i>
-                                    {% elif info['status'] == 'exited' %}
-                                        <i class="fa fa-times-circle fa-fw fa-3x icon-error"></i>
+                                    {% elif json['State']['Status'] != 'running' %}
+                                        {% if json['State']['Error'] == '' %}
+                                            <i class="fa fa-times-circle fa-fw fa-3x icon-error"></i>
+                                        {% else %}
+                                            <i data-toggle="tooltip" title="{{ json['State']['Error'] }}" class="fa fa-info-circle fa-fw fa-3x icon-error"></i>
+                                             <script>
+                                                $(function () { $(".tooltip").tooltip({html : true });});
+                                            </script>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="/container/info/{{ info['container_id'] }}">{{ info['container_name'] }}</a>
+                                    <a class="container_name" href="/container/info/{{ info['container_id'] }}">{{ info['container_name'] }}</a>
                                     <br />
                                     <small>{{ info['container_id'] | cutStr(0,12) }}</small>
                                 </td>
                                 {% if is_all %}
                                     <td>
-                                        <a href="/host/info/{{ info['host_id'] }}">{{ info['host_name'] }}</a>
+                                        <i class="{{ info['saltstack_id'] }} fa fa-spinner fa-pulse fa-fw"></i>
+                                        <span class="sr-only">Loading...</span>
+                                        <a class="host_name" href="/host/info/{{ info['saltstack_id'] }}">{{ info['saltstack_id'] }}</a>
                                         <br />
-                                        <small>{{ info['host_id'] | cutStr(0,12) }}</small>
+                                        <small>{{ info['saltstack_id'] }}</small>
                                     </td>
                                 {% endif %}
                                 <td>
                                     {# 优化点：直接在后端url_for生成，传至模板 #}
-                                    <a href="/image/info/{{ json['Image'] | cutStr(7) }}">{{ json['Config']['Image'] }}</a>
+                                    <a class="image_name" href="/image/info/{{ json['Image'] | cutStr(7) }}">{{ json['Config']['Image'] }}</a>
                                     <br />
                                     <small>{{ json['Image'] | cutStr(7,19) }}</small>
                                 </td>
-                                <td>{{ info['create_time'] }}</td>
+                                <td>
+                                    {% if json['State']['Status'] == 'created' %}
+                                        新创建
+                                    {% else %}
+                                        {{ json['State']['StartedAt'] }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ info['created_at'] }}</td>
                                 <td>
                                     {% set netInfo = json['NetworkSettings']['Networks'] | formatNetwrokJson %}
                                     {% for x in netInfo %}
@@ -139,26 +150,32 @@
                                 <td>
                                     <div class="btn-group" style="margin-top: 3px;min-width: 100px;">
                                         {% if info['status'] == 'running' %}
-                                            <a class="btn btn-danger stopbtn" value="{{ info['container_id'] }}"><i class="fa fa-stop"></i> 关闭</a>
+                                            <a class="btn btn-danger stopbtn" data-name="{{ info['container_name'] }}" value="{{ info['container_id'] }}"><i class="fa fa-stop"></i> 关闭</a>
                                             <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                 <span class="caret"></span>
                                             </button>
                                             <ul class="dropdown-menu" style="min-width: 94px !important;" role="menu">
-                                                <li><a href="#" class="startbtn" value="{{ info['container_id'] }}"><i class="fa fa-play" style="padding-right: 10px"></i>启动</a></li>
                                                 <li><a href="#" class="pausebtn" value="{{ info['container_id'] }}"><i class="fa fa-pause" style="padding-right: 10px"></i>暂停</a></li>
-                                                <li><a href="#" class="followbtn" value="{{ info['container_id'] }}"><i class="fa fa-heart" style="padding-right: 10px"></i>关注</a></li>
-                                                <li><a href="#"><i class="fa fa-search" style="padding-right: 10px"></i>查看</a></li>
+                                                {% if info['follow'] == 0 %}
+                                                    <li><a href="#" class="followbtn" value="{{ info['container_id'] }}"><i class="fa fa-heart" style="padding-right: 10px"></i>关注</a></li>
+                                                {% else %}
+                                                    <li><a href="#" class="unfollowbtn" value="{{ info['container_id'] }}"><i class="fa fa-heart" style="padding-right: 10px"></i>取消关注</a></li>
+                                                {% endif %}
+                                                <li><a href="/container/info/{{ info['container_id'] }}"><i class="fa fa-search" style="padding-right: 10px"></i>查看</a></li>
                                             </ul>
-                                        {% elif info['status'] == 'exited' %}
+                                        {% elif info['status'] != 'running' %}
                                             <a class="btn btn-success startbtn" data-name="{{ info['container_name'] }}" value="{{ info['container_id'] }}"><i class="fa fa-play"></i> 启动</a>
                                             <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                 <span class="caret"></span>
                                             </button>
                                             <ul class="dropdown-menu" style="min-width: 94px !important;" role="menu">
-                                                <li><a href="#" class="stopbtn" value="{{ info['container_id'] }}"><i class="fa fa-stop" style="padding-right: 10px"></i>关闭</a></li>
                                                 <li><a href="#" class="pausebtn" value="{{ info['container_id'] }}"><i class="fa fa-pause" style="padding-right: 10px"></i>暂停</a></li>
-                                                <li><a href="#" class="followbtn" value="{{ info['container_id'] }}"><i class="fa fa-heart" style="padding-right: 10px"></i>关注</a></li>
-                                                <li><a href="#"><i class="fa fa-search" style="padding-right: 10px"></i>查看</a></li>
+                                                {% if info['follow'] == 0 %}
+                                                    <li><a href="#" class="followbtn" value="{{ info['container_id'] }}"><i class="fa fa-heart" style="padding-right: 10px"></i>关注</a></li>
+                                                {% else %}
+                                                    <li><a href="#" class="unfollowbtn" value="{{ info['container_id'] }}"><i class="fa fa-heart" style="padding-right: 10px"></i>取消关注</a></li>
+                                                {% endif %}
+                                                <li><a href="/container/info/{{ info['container_id'] }}"><i class="fa fa-search" style="padding-right: 10px"></i>查看</a></li>
                                             </ul>
                                         {% endif %}
                                     </div>
@@ -168,7 +185,7 @@
                         </tbody>
                         <tfoot>
                             <td><input type="checkbox" id="check-all" class="flat"></td>
-                            <td colspan="{% if is_all %}7{% else %}8{% endif %}" style="padding-top: 12px;">
+                            <td colspan="{% if is_all %}8{% else %}7{% endif %}" style="padding-top: 12px;padding-right:0px">
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-default" type="button"><i class="fa fa-play"></i> 启动</button>
                                     <button class="btn btn-default" type="button"><i class="fa fa-stop"></i> 停止</button>
@@ -195,12 +212,12 @@
                                                 {% if is_all %}
                                                     <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> 全部主机 <span class="caret"></span> </button>
                                                 {% else %}
-                                                    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> {{ host_name }} <span class="caret"></span> </button>
+                                                    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button"> {{ saltstack_id }} <span class="caret"></span> </button>
                                                 {% endif %}
                                                 <ul class="dropdown-menu">
                                                     <li><a href="/containers/all">全部主机</a></li>
                                                     {% for info in host_list %}
-                                                        <li><a href="/containers/{{ info['host_id'] }}">{{ info['host_name'] }}</a></li>
+                                                        <li><a href="/containers/{{ info['saltstack_id'] }}">{{ info['saltstack_id'] }}</a></li>
                                                     {% endfor %}
                                                 </ul>
                                             </div>
@@ -214,4 +231,457 @@
             </div>
         </div>
     </div>
+<div class="modal fade" id="addContainer_model" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog"  style="width:60%">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="myModalLabel">
+					添加容器
+				</h4>
+			</div>
+
+                <div class="modal-body">
+                    <form class="form-horizontal" role="form">
+                        <h5 style="padding-left:10px;font-weight: bold;">容器基本设置</h5>
+                        <div class="divider"></div>
+                        <div class="form-group">
+                            <label class="col-sm-1 control-label">容器名称</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control" id="saltstack_id" placeholder="Container Name">
+                            </div>
+                            <label class="col-sm-1 control-label">主机名</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control" id="hostname" placeholder="Hostname">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-1 control-label">选择主机</label>
+                            <div class="col-sm-5">
+                                <select class="form-control" id="host_list_select" style="width:100%"></select>
+                            </div>
+                            <label class="col-sm-1 control-label">选择镜像</label>
+                            <div class="col-sm-5">
+                                <select class="form-control" id="image_list_select" style="width:100%"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-1 control-label">命令</label>
+                            <div class="col-sm-11">
+                                <input id="command" type="text" class="tags form-control" data-role="tagsinput" value="" />
+                            </div>
+                        </div>
+                        <h5 style="padding:15px 0 0 10px;font-weight: bold;">环境变量</h5>
+                        <div class="divider"></div>
+                        <div class="form-group">
+                            <div class="col-sm-6">
+                                <span style="font-weight: bold;">变量名称</span>
+                                <input type="text" class="form-control" id="env_name" placeholder="Alias">
+                            </div>
+                            <div class="col-sm-5">
+                                <span style="font-weight: bold;">变量值</span>
+                                <input type="text" class="form-control" id="env_value" placeholder="Alias">
+                            </div>
+                            <div class="col-sm-1">
+                                <button type="button" class="btn btn-success" style="margin-top: 17px;" id="add_env"><i class="fa fa-plus"></i></button>
+                            </div>
+                            <div class="col-sm-12">
+                                <div id="env_list" style="margin-top: 10px;"></div>
+                            </div>
+                        </div>
+                        <h5 style="padding:15px 0 0 10px;font-weight: bold;">容器链接</h5>
+                        <div class="divider"></div>
+                        <div class="form-group">
+                            <div class="col-sm-6">
+                                <span style="font-weight: bold;">选择容器</span>
+                                <select class="form-control" id="container_list_select" style="width:100%;"></select>
+                            </div>
+                            <div class="col-sm-5">
+                                <span style="font-weight: bold;">别名</span>
+                                <input type="text" class="form-control" id="link_container_alias" placeholder="Alias">
+                            </div>
+                            <div class="col-sm-1">
+                                <button type="button" class="btn btn-success" style="margin-top: 17px;" id="add_link"><i class="fa fa-plus"></i></button>
+                            </div>
+                            <div class="col-sm-12">
+                                <div id="link_list" style="margin-top: 10px;"></div>
+                            </div>
+                        </div>
+                        <h5 style="padding:15px 0 0 10px;font-weight: bold;">端口映射</h5>
+                        <div class="divider"></div>
+                        <div class="form-group">
+                            <div class="col-sm-3">
+                                <span style="font-weight: bold;">容器端口</span>
+                                <input type="text" class="form-control" id="container_port" placeholder="Container Port">
+                            </div>
+                            <div class="col-sm-2">
+                                <span style="font-weight: bold;">协议</span>
+                                <select class="form-control" id="protocol" style="width:100%">
+                                    <option value="0" selected="selected">TCP</option>
+                                    <option value="1">UDP</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <span style="font-weight: bold;">主机监听地址</span>
+                                <input type="text" class="form-control" id="host_address" placeholder="0.0.0.0">
+                            </div>
+                            <div class="col-sm-3">
+                                <span style="font-weight: bold;">主机端口</span>
+                                <input type="text" class="form-control" id="host_port" placeholder="Host Port">
+                            </div>
+                            <div class="col-sm-1">
+                                <button type="button" class="btn btn-success" style="margin-top: 17px;" id="add_port"><i class="fa fa-plus"></i></button>
+                            </div>
+                            <div class="col-sm-12">
+                                <div id="port_list" style="margin-top: 10px;"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <div id="create_error" style="margin-top: 10px;"></div>
+                    <button type="button" class="btn btn-default"  style="float:left;"><i class="fa fa-download"></i> 生成 dockerfile
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addHost_btn">
+                        创建
+                    </button>
+                </div>
+
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+{% block head %}
+
+    <script src="{{ url_for('static',filename='lib/iCheck/icheck.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='lib/select2/dist/js/select2.full.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='lib/jquery.tagsinput/src/jquery.tagsinput.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/control.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/global.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+
+            $('#containers').addClass('current-page');
+
+            var saltstack_list = [
+                {% for info in container_list %}
+                    "{{ info['saltstack_id'] }}",
+                {% endfor %}
+            ];
+            setTimeout(function () {
+                checkHostIsAlive($.unique(saltstack_list));
+            }, 100);
+
+
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            //tagsInput
+            $('#command').tagsInput({
+                width: 'auto',
+                unique:false,
+                defaultText :'回车添加',
+                removeWithBackspace : false,
+            });
+
+            //修正BS的modal导致select2的下拉框错误问题
+            $.fn.modal.Constructor.prototype.enforceFocus =function(){};
+
+
+
+
+            //添加容器
+            $('#addContainer_model_btn').click(function (){
+                $('#addContainer_model').modal('toggle');
+
+                var container_port_list = new Array();
+                var host_port_list = new Array();
+                var link_list = new Array();
+                var env_list = new Array();
+
+
+                var host = $('#host_list_select');
+                var image = $('#image_list_select');
+                var container = $('#container_list_select');
+                //获取主机信息，设置主机下拉框
+                $.getJSON('/api/get/hosts/', function (data) {
+                    host.empty();
+                    host.select2({
+                        data: data,
+                        allowClear: true,
+                        placeholder: "请选择主机",
+                        templateResult:  function (repo) {
+                            var format = "<div><div><span style='font-weight:bold;'>主机名称</span> : "+repo.text+"</div> <div> <div style='float:left;'>系统版本 : "+repo.lsb_distrib_description+"<br />Docker 版本 : "+repo.docker_version+"</div> <div style='float:right;'>系统位数 : "+repo.osarch+"<br />Docker API 版本 : "+repo.docker_apiversion+"</div> </div> <div style='clear:both;'></div> </div>";
+                            return format;
+                        },
+                        templateSelection: function (repo){
+                            $.getJSON('/api/get/images/'+repo.text, function (data) {
+                                image.empty();
+                                image.select2({
+                                    data: data,
+                                    allowClear: true,
+                                    placeholder: "请选择镜像",
+                                    templateResult:  function (repo) {
+                                        var format = "<div><span style='font-weight:bold;float:left;'>镜像名称</span><span style='float:right'>镜像体积 : "+imageSize(repo.size)+"</span><br /><div>"+repo.text+"["+String(repo.id).substr(0,12)+"]"+"</div></div>";
+                                        return format;
+                                    },
+                                    templateSelection: function (repo){
+                                        return repo.text;
+                                    },
+                                    "language": {
+                                           "noResults": function(){
+                                               return "找不到镜像！";
+                                           }
+                                       },
+                                    escapeMarkup: function (makeup) {
+                                        return makeup;
+                                    }
+                                });
+                            });
+                            $.getJSON('/api/get/containers/'+repo.text, function (data) {
+                                container.empty();
+                                container.select2({
+                                    data: data,
+                                    allowClear: true,
+                                    placeholder: "请选择容器",
+                                    templateResult:  function (repo) {
+                                        var format = "<div><span style='font-weight:bold;'>容器名称</span> : "+repo.text+"<span style='float:right'>容器状态 : "+repo.status+"</span></div>";
+                                        return format;
+                                    },
+                                    templateSelection: function (repo){
+                                        return repo.text;
+                                    },
+                                    "language": {
+                                           "noResults": function(){
+                                               return "找不到容器！";
+                                           }
+                                       },
+                                    escapeMarkup: function (makeup) {
+                                        return makeup;
+                                    }
+                                });
+                            });
+                            return repo.text;
+                        },
+                        "language": {
+                               "noResults": function(){
+                                   return "找不到主机！";
+                               }
+                           },
+                        escapeMarkup: function (makeup) {
+                            return makeup;
+                        }
+                    });
+                });
+
+                $("#add_env").click(function () {
+
+                    var env_name = $.trim($("#env_name").val());
+                    var env_val = $.trim($("#env_value").val());
+
+                    console.log(env_name);
+                    console.log(env_val);
+
+                    if(env_name == '') {
+                        $("#env_name").val('');
+                        showError($('#add_env'), $("#env_list"), 'env_name_isset', '变量名称不能为空！');
+                        return false;
+                    }
+
+                    if(env_val == ''){
+                        $("#host_port").val('');
+                        showError($('#add_env'), $("#env_list"), 'env_val_isset', '变量值不能为空！');
+                        return false;
+                    }
+
+                    if(env_list.length == 0){
+                        $("#env_list").append("<span class='tag'><span style='padding-right:8px;' data-env-name='"+env_name+"' data-env-val='"+env_val+"'>"+env_name+"="+env_val+"</span><i class='remove_tag fa fa-close'></i></span>");
+                        $("#env_list").children('.tag').on("click",".remove_tag",function(){
+                            link_list.splice($.inArray(env_name,env_list));
+                            $(this).parent().remove();
+                        });
+                        env_list.push(env_name);
+                    }else{
+                        for(var i = 0;env_list.length > i;i++){
+                            if(env_list[i] == env_name){
+                               showError($('#add_env'), $("#env_list"), 'env_val_isset', '该变量已添加！');
+                                return false;
+                            }
+                        }
+                        $("#env_list").append("<span class='tag'><span style='padding-right:8px;' data-env-name='"+env_name+"' data-env-val='"+env_val+"'>"+env_name+"="+env_val+"</span><i class='remove_tag fa fa-close'></i></span>");
+                        $("#env_list").children('.tag').on("click",".remove_tag",function(){
+                            link_list.splice($.inArray(env_name,env_list));
+                            $(this).parent().remove();
+                        });
+                        env_list.push(env_name);
+                    }
+                });
+
+                $("#add_port").click(function () {
+
+                    var container_port_val = $.trim($("#container_port").val());
+                    var host_port_val = $.trim($("#host_port").val());
+                    var host_address = $("#host_address").val();
+
+                    if(isNaN(container_port_val)){
+                        $("#container_port").val('');
+                        showError($('#add_port'), $("#port_list"), 'container_port_isset', '容器端口只能是数字！');
+                        return false;
+                    }else if(container_port_val == ''){
+                        $("#container_port").val('');
+                        showError($('#add_port'), $("#port_list"), 'container_port_isset', '容器端口不能为空！');
+                        return false;
+                    }else if(parseInt(container_port_val) < 1 || parseInt(container_port_val) > 65535){
+                        $("#container_port").val('');
+                        showError($('#add_port'), $("#port_list"), 'container_port_isset', '容器端口在 1 ~ 65535 之间！');
+                        return false;
+                    }
+
+                    if(isNaN(host_port_val)){
+                        $("#host_port").val('');
+                        showError($('#add_port'), $("#port_list"), 'host_port_isset', '主机端口只能是数字！');
+                        return false;
+                    }else if(host_port_val == ''){
+                        $("#host_port").val('');
+                        showError($('#add_port'), $("#port_list"), 'host_port_isset', '主机端口不能为空！');
+                        return false;
+                    }else if(parseInt(host_port_val) < 1 || parseInt(host_port_val) > 65535){
+                        $("#host_port").val('');
+                        showError($('#add_port'), $("#port_list"), 'host_port_isset', '主机端口在 1 ~ 65535 之间！');
+                        return false;
+                    }
+
+                    if(!valiIp(host_address)){
+                        $("#host_address").val('');
+                        showError($('#add_port'), $("#port_list"), 'host_address_isset', '错误 IP 地址！');
+                        return false;
+                    }
+
+                    if(container_port_list.length == 0 && host_port_list == 0){
+                        $("#port_list").append("<span class='tag'><span style='padding-right:8px;' data-container-prot='"+container_port_val+"' data-protocol='"+$('#protocol').val()+"' data-host-addredd='"+((host_address == '') ? "0.0.0.0" : host_address)+"' data-host-port='"+host_port_val+"'>"+container_port_val+"/"+(($('#protocol').val() == 0) ? "TCP" : "UDP")+"->"+((host_address == '') ? "0.0.0.0" : host_address)+":"+host_port_val+"</span><i class='remove_tag fa fa-close'></i></span>");
+                        $("#port_list").children('.tag').on("click",".remove_tag",function(){
+                            link_list.splice($.inArray(container_port_val,container_port_list));
+                            $(this).parent().remove();
+                        });
+                        container_port_list.push(container_port_val);
+                        host_port_list.push(host_port_val);
+                    }else{
+                        for(var i = 0;container_port_list.length > i;i++){
+                            if(container_port_list[i] == container_port_val){
+                                showError($("#add_link"), $("#port_list"), 'container_isset', '该容器端口已添加！');
+                                return false;
+                            }
+                        }
+                        for(var i = 0;host_port_list.length > i;i++){
+                            if(host_port_list[i] == host_port_val){
+                                showError($("#add_link"), $("#port_list"), 'container_isset', '该主机端口已添加！');
+                                return false;
+                            }
+                        }
+                        $("#port_list").append("<span class='tag'><span style='padding-right:8px;' data-container-prot='"+container_port_val+"' data-protocol='"+$('#protocol').val()+"' data-host-addredd='"+((host_address == '') ? "0.0.0.0" : host_address)+"' data-host-port='"+host_port_val+"'>"+container_port_val+"/"+(($('#protocol').val() == 0) ? "TCP" : "UDP")+"->"+((host_address == '') ? "0.0.0.0" : host_address)+":"+host_port_val+"</span><i class='remove_tag fa fa-close'></i></span>");
+                        $("#port_list").children('.tag').on("click",".remove_tag",function(){
+                            link_list.splice($.inArray(container_port_val,container_port_list));
+                            $(this).parent().remove();
+                        });
+                        container_port_list.push(container_port_val);
+                        host_port_list.push(host_port_val);
+                    }
+                });
+
+                $("#add_link").click(function () {
+                    var alias = null;
+                    try {
+                        var container_name = container.select2("data")[0].text;
+                    }
+                    catch(err) {
+                        showError($("#add_link"), $("#link_list"), 'container_isset', '请选择容器！');
+                        return false;
+                    }
+                    if($("#link_container_alias").val() != ""){
+                        alias = $("#link_container_alias").val();
+                    }else{
+                        alias = container_name;
+                    }
+                    if(link_list.length == 0){
+                        $("#link_list").append("<span class='tag'><span data-container-name='"+container_name+"' data-alias='"+alias+"' style='padding-right:8px;'>"+container_name+"<span class='alias'>["+alias+"]</span></span><i class='remove_tag fa fa-close' title='删除链接'></i></span>");
+{#                        $("#link_list").children('.tag').on("click",".remove_tag",function(){#}
+{#                            link_list.splice($.inArray(container_name,link_list));#}
+{#                            $(this).remove();#}
+{#                        });#}
+                        $("#link_list").children('.tag').on("click",".remove_tag",function(){
+                            link_list.splice($.inArray(container_name,link_list));
+                            $(this).parent().remove();
+                        });
+                        link_list.push(container_name);
+                    }else{
+                        for(var i = 0;link_list.length > i;i++){
+                            if(link_list[i] == container_name){
+                                showError($("#add_link"), $("#link_list"), 'container_isset', '该容器已添加！');
+                                return false;
+                            }
+                        }
+                        $("#link_list").append("<span class='tag'><span data-container-name='"+container_name+"' data-alias='"+alias+"' style='padding-right:8px;'>"+container_name+"<span class='alias'>["+alias+"]</span></span><i class='remove_tag fa fa-close' title='删除链接'></i></span>");
+                        $("#link_list").children('.tag').on("click",".remove_tag",function(){
+                            link_list.splice($.inArray(container_name,link_list));
+                            $(this).parent().remove();
+                        });
+                        link_list.push(container_name);
+                    }
+                });
+
+            });
+
+            function valiIp(){
+                var regexp = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+                return function(value){
+                    var valid = regexp.test(value);
+                    if(!valid){
+                        return false;
+                    }
+                    return value.split('.').every(function(num){
+                        if(num.length > 1 && num.charAt(0) === '0'){
+                            return false;
+                        }else if(parseInt(num , 10) > 255){
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+            }
+
+            function showError(buttonobj, showobj, classid, msg){
+                buttonobj.attr("disabled",true);
+                buttonobj.addClass('disabled');
+                showobj.parent('div').append("<div class='alert alert-warning "+classid+"' style='clear:both;margin-bottom: 0px;margin-top:8px;'>"+msg+"</div>");
+                setTimeout(function (){
+                    buttonobj.removeClass('disabled');
+                    buttonobj.attr("disabled",false);
+                    $("."+classid).remove();
+                },3000);
+                return false;
+            }
+
+            function imageSize(size){
+                if (size >= 1000 && size < 1048576){
+                    return (size / 1000).toFixed(2) + " KB"
+                }else if (size >= 1048576 && size < 1073741824){
+                    return (size / 1000000).toFixed(2) + " MB"
+                }else if (size > 1073741824){
+                    return (size / 1000000000).toFixed(2) + " GB"
+                }else{
+                    return size + " B"
+                }
+            }
+
+
+            $(".remove_tag").click(function(){alert("ok!")});
+
+        });
+    </script>
 {% endblock %}

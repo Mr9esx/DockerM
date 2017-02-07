@@ -31,7 +31,7 @@
                     }
                 });
                 $.ajax( {
-                    url:'{{ request.url_root }}api/v1.0/container/getstatus/{{ container_id }}',
+                    url:'{{ request.url_root }}api/container/getstatus/{{ container_id }}',
                     type:'get',
                     cache:false,
                     dataType:'json',
@@ -44,10 +44,9 @@
                         var Container_id = '{{ container_id }}';
                         if(data.length === 0){
                             var Mem_limit = 'None';
-                            drawMemPer(Container_id,mem_data,'None',Mem_limit);
-                            drawCpuPer(Container_id,cpu_data,'None');
-                            drawDownNetPer(Container_id,net_down_data,'None');
-                            drawUpNetPer(Container_id,net_up_data,'None');
+                            drawMemPer(Container_id,mem_data,'容器内存使用率',Mem_limit);
+                            drawCpuPer(Container_id,cpu_data,'容器处理器使用率');
+                            drawNetwrok(Container_id,net_down_data,net_up_data,'容器网络上下行速率');
                             $("#cpu").html("None");
                             $("#mem").html("None");
                             $("#network_rx_bytes").html('None');
@@ -113,7 +112,7 @@
                         }
                     },
                     error : function() {
-                        alert('ok');
+                        console.log('error');
                     }
                 });
                 function drawMemPer(Container_id,data,title,Mem_limit,data2){
@@ -404,7 +403,7 @@
 {% set portInfo = info['NetworkSettings']['Ports'] | formatPortsJson( host_id ) %}
 {% block content %}
         <div class="col-md-12 col-xs-12">
-            <div class="x_panel">
+            <div class="x_panel" style="white-space:nowrap;overflow: hidden;">
                 <h3 style="float: left">{{ container_name }}<br><small style="margin-left: 0px !important;">{{ container_id }}</small></h3>
                 <div class="pull-right" style="margin-top: 30px;">
                     <button type="button" class="btn btn-default refreshbtn"><i class="fa fa-refresh"></i></button>
@@ -436,19 +435,27 @@
                 </div>
                 <div class="x_content" style="text-align: center;">
                     <div>
-                        {% if status == 'running' %}
+                        {% if info['State']['Status'] == 'running' %}
                             <i class="fa fa-check-circle fa-fw fa-4x icon-success"></i>
                             <div>正在运行</div>
-                        {% elif status == 'exited' %}
-                            <i class="fa fa-times-circle fa-fw fa-4x icon-error"></i>
-                            <div>已关闭</div>
+                        {% elif info['State']['Status'] == 'exited' %}
+                            {% if info['State']['Error'] == '' %}
+                                <i class="fa fa-times-circle fa-fw fa-4x icon-error"></i>
+                                <div>已关闭</div>
+                            {% else %}
+                                <i data-toggle="tooltip" title="{{ info['State']['Error'] }}" class="fa fa-info-circle fa-fw fa-4x icon-error"></i>
+                                <div>启动错误</div>
+                                <script>
+                                    $(function () { $(".tooltip").tooltip({html : true });});
+                                </script>
+                            {% endif %}
                         {% endif %}
                         <div style="margin-top: 2px;">
-                            {% if status == 'running' %}
+                            {% if info['State']['Status'] == 'running' %}
                                 已运行 : {{ info['State']['StartedAt'] | nowRunTime() }}
-                            {% elif status == 'deleted' %}
+                            {% elif info['State']['Status'] == 'deleted' %}
                                 None
-                            {% elif (status != 'running' or status != 'stopping') or (status != 'paused' or status != 'unpause') %}
+                            {% elif (info['State']['Status'] != 'running' or info['State']['Status'] != 'stopping') or (info['State']['Status'] != 'paused' or info['State']['Status'] != 'unpause') %}
                                 运行时长 : {{ info['State']['StartedAt'] | stopRunTime(info['State']['FinishedAt']) }}
                             {% endif %}
                         </div>
@@ -466,10 +473,10 @@
                             <div id="mem_bar" class="progress-bar bg-green" role="progressbar" data-transitiongoal=""></div>
                         </div>
                     </td>
-                    {% if status == 'running' %}
+                    {% if info['State']['Status'] == 'running' %}
                         <button type="button" class="btn btn-danger"><i class="fa fa-stop"></i> 关闭</button>
                         <button type="button" class="btn btn-warning"><i class="fa fa-pause"></i> 暂停</button>
-                    {% elif status == 'exited' %}
+                    {% elif info['State']['Status'] == 'exited' %}
                         <button type="button" class="btn btn-success"><i class="fa fa-play"></i> 启动</button>
                     {% endif %}
                 </div>
@@ -492,12 +499,12 @@
                 <div class="x_content">
                     <ul class="legend list-unstyled">
                         <li><dt>创建时间</dt><dd>{{ info['Created'] }}</dd></li>
-                        {% if status == 'exited' %}
+                        {% if info['State']['Status'] == 'exited' %}
                             <li>
                                 <dt>停止于</dt>
                                 <dd>{{ info['State']['FinishedAt'] }}</dd>
                             </li>
-                        {% elif status == 'running' %}
+                        {% elif info['State']['Status'] == 'running' %}
                             <li>
                                 <dt>运行于</dt>
                                 <dd>{{ info['State']['StartedAt'] }}</dd>
@@ -554,11 +561,11 @@
                             <dd id="network_tx_bytes">Loading</dd>
                         </li>
                         <li>
-                            <dt>个接收数据包</dt>
+                            <dt>接收数据包</dt>
                             <dd id="network_rx_packets">Loading</dd>
                         </li>
                         <li>
-                            <dt>个发送数据包</dt>
+                            <dt>发送数据包</dt>
                             <dd id="network_tx_packets">Loading</dd>
                         </li>
                     </ul>
@@ -629,6 +636,11 @@
             </div>
         </div>
         <div class="col-md-12 col-xs-12">
+            {% if info['State']['Error'] != '' %}
+                <div class="alert alert-error">
+                    {{ info['State']['Error'] }}
+                </div>
+            {% endif %}
             <div class="x_panel">
                 <div class="" role="tabpanel" data-example-id="togglable-tabs" style="padding: 0;">
                     <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">

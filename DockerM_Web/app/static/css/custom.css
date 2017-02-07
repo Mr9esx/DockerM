@@ -418,10 +418,14 @@ body .container.body .right_col {
 .top_nav .nav > li > a:focus, .top_nav .nav > li > a:hover, .top_nav .nav .open > a, .top_nav .nav .open > a:focus, .top_nav .nav .open > a:hover {
   background: #D9DEE4; }
 
+html{
+  font-family: "Raleway", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+}
+
 body {
   color: #73879C;
   background: #F7F7F7;
-  font-family: "Microsoft YaHei","Helvetica Neue", Roboto, Arial, "Droid Sans", sans-serif ;
+  font-family: "Raleway", "Microsoft YaHei", Helvetica, Arial, sans-serif;
   font-size: 13px;
   font-weight: 400;
   line-height: 1.471; }
@@ -3926,23 +3930,23 @@ ul.verticle_bars li {
   border-color: rgba(38, 185, 154, 0.88); }
 
 .alert-info {
-  color: #E9EDEF;
+  color: #ffffff;
   background-color: rgba(52, 152, 219, 0.88);
   border-color: rgba(52, 152, 219, 0.88); }
 
 .alert-warning {
-  color: #E9EDEF;
+  color: #ffffff;
   background-color: rgba(243, 156, 18, 0.88);
   border-color: rgba(243, 156, 18, 0.88); }
 
 .alert-danger,
 .alert-error {
-  color: #E9EDEF;
+  color: #ffffff;
   background-color: rgba(231, 76, 60, 0.88);
   border-color: rgba(231, 76, 60, 0.88); }
 
 .ui-pnotify.dark .ui-pnotify-container {
-  color: #E9EDEF;
+  color: #ffffff;
   background-color: rgba(52, 73, 94, 0.88);
   border-color: rgba(52, 73, 94, 0.88); }
 

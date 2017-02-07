@@ -17,32 +17,17 @@
         <link href="{{ url_for('static',filename='lib/pnotify/pnotify.css') }}" rel="stylesheet">
         <link href="{{ url_for('static',filename='lib/pnotify/pnotify.buttons.css') }}" rel="stylesheet">
         <link href="{{ url_for('static',filename='lib/pnotify/pnotify.nonblock.css') }}" rel="stylesheet">
-        <!-- bootstrap-progressbar -->
-        <link href="{{ url_for('static',filename='lib/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css') }}" rel="stylesheet">
-        <!-- jQuery custom content scroller -->
-        <link href="{{ url_for('static',filename='lib/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css') }}" rel="stylesheet"/>
-        <!-- Custom Theme Style -->
+
+
+        <!-- iCheck -->
+        <link href="{{ url_for('static', filename='lib/iCheck/skins/flat/green.css') }}" rel="stylesheet">
+
+        <link href="{{ url_for('static', filename='lib/select2/dist/css/select2.css') }}" rel="stylesheet">
+
+        <!-- 自定义样式 -->
         <link href="{{ url_for('static',filename='css/custom.css') }}" rel="stylesheet">
-        <!-- jQuery -->
-        <script src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
-        <!-- Bootstrap -->
-        <script src="{{ url_for('static', filename='lib/bootstrap/js/bootstrap.min.js') }}"></script>
-        <!-- FastClick -->
-        <script src="{{ url_for('static', filename='lib/fastclick/fastclick.js') }}"></script>
-        <!-- NProgress -->
-        <script src="{{ url_for('static', filename='lib/nprogress/nprogress.js') }}"></script>
-        <!-- bootstrap-progressbar -->
-        <script src="{{ url_for('static', filename='lib/bootstrap-progressbar/bootstrap-progressbar.min.js') }}"></script>
-        <!-- PNotify -->
-        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.js') }}"></script>
-        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.buttons.js') }}"></script>
-        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.nonblock.js') }}"></script>
-        <!-- jQuery mousewheel -->
-        <script src="{{ url_for('static',filename='lib/jquery-mousewheel/jquery.mousewheel.min.js') }}"></script>
-        <!-- jQuery custom content scroller -->
-        <script src="{{ url_for('static',filename='lib/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.js') }}"></script>
-        {% block head %}
-        {% endblock %}
+
+
     </head>
 
     <body class="nav-md">
@@ -62,18 +47,17 @@
                             <ul class="nav side-menu">
                                 <li id="index"><a href="/"><i class="fa fa-home "></i> 首页</a></li>
                                 <li id="hosts"><a href="/hosts/"><i class="fa fa-server"></i> 主机 </a></li>
-                                <li id="app"><a href="/app/"><i class="fa fa-window-maximize"></i> 应用 <span class="label label-success menu-label pull-right">即将实现</span></a></li>
                                 <li id="containers"><a href="/containers/all"><i class="fa fa-cubes"></i> 容器 </a></li>
                                 <li id="images"><a href="/images/all"><i class="fa fa-floppy-o"></i> 镜像 </a></li>
                                 <li id="networks"><a href="/networks/all"><i class="fa fa-sitemap"></i> 网络 </a></li>
-                                <li id="setting"><a href="/setting/"><i class="fa fa-cog"></i> 设置 <span class="label label-success pull-right"> 即将实现 </span></a></li>
+                                <li id="setting"><a href="/setting/"><i class="fa fa-cog"></i> 设置</a></li>
                             </ul>
                         </div>
                         <div class="menu_section">
                             <ul class="nav side-menu">
                                 <li><a><i class="fa fa-database"></i> 镜像仓库 <span class="label label-success pull-right">即将实现</span></a></li>
                                 <li><a><i class="fa fa-bell"></i> 警报设置 <span class="label label-success pull-right">即将实现</span></a></li>
-                                <li><a><i class="fa fa-file-text"></i> 操作日志 <span class="label label-success pull-right">即将实现</span></a></li>
+                                <li id="logs"><a href="/logs/all"><i class="fa fa-file-text"></i> 操作日志</a></li>
                             </ul>
                         </div>
                     </div>
@@ -210,7 +194,20 @@
         <!-- /footer content -->
       </div>
     </div>
-    <!-- Custom Theme Scripts -->
+    <!-- jQuery -->
+        <script src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
+        <!-- Bootstrap -->
+        <script src="{{ url_for('static', filename='lib/bootstrap/js/bootstrap.min.js') }}"></script>
+        <!-- NProgress -->
+        <script src="{{ url_for('static', filename='lib/nprogress/nprogress.js') }}"></script>
+        <!-- PNotify -->
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.buttons.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.nonblock.js') }}"></script>
+
+        {% block head %}
+        {% endblock %}
+    <!-- 自定义脚本 -->
     <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
   </body>
 </html>

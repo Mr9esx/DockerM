@@ -23,7 +23,9 @@ def create_app(config_name):
 	db.init_app(app)
 	lm.init_app(app)
 
+	#注册自定义函数init_app
 	env = app.jinja_env
+	env.filters['validataipaddress'] = validataipaddress
 	env.filters['cutStr'] = cutStr
 	env.filters['imageSize'] = imageSize
 	env.filters['stopRunTime'] = stopRunTime

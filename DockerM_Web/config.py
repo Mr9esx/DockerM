@@ -4,7 +4,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
 	SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
 	SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-	RABBITMQ_IP = '192.168.188.133'
+	RABBITMQ_IP = '192.168.175.130'
 	RABBITMQ_PORT = 5672
 	RABBITMQ_VHOST = 'dockerm_vhost'
 	RABBITMQ_USER = 'dockerm'

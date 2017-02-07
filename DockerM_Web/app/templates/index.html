@@ -1,11 +1,58 @@
 {% extends "base.html" %}
 {% block head %}
-    <script src="{{ url_for('static',filename='js/control.js') }}"></script>
+    <!-- bootstrap-progressbar -->
+    <link href="{{ url_for('static',filename='lib/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css') }}" rel="stylesheet">
     <script>
         $(document).ready(function() {
             $('#index').addClass('current-page');
         });
+        {% for info in containersList %}
+            $.ajax( {
+                    url:'{{ request.url_root }}api/v1.0/container/getstatus_now/{{ info['container_id'] }}',
+                    type:'get',
+                    cache:false,
+                    dataType:'json',
+                    success:function(data) {
+                        data.reverse();
+                        var mem_data = new Array();
+                        var cpu_data = new Array();
+                        var Container_id = '{{ container_id }}';
+                        if(data.length === 0){
+                            $(".cpu_{{ info['container_id'] }} small").text("None");
+                            $(".mem_{{ info['container_id'] }} small").text("None");
+                        }else{
+                            cpu_percent = data[0].cpu_percent
+                            memory_percent = data[0].memory_percent
+                            $(".cpu_{{ info['container_id'] }} .progress-bar").css('width',cpu_percent+"%");
+                            $(".mem_{{ info['container_id'] }} .progress-bar").css('width',memory_percent+"%");
+                            $(".cpu_{{ info['container_id'] }} small").text("占用率 : "+cpu_percent+"%");
+                            $(".mem_{{ info['container_id'] }} small").text("占用率 : "+memory_percent+"%");
+                            if(cpu_percent >= 60 && cpu_percent < 80){
+                                $(".cpu_{{ info['container_id'] }} .progress-bar").addClass('bg-orange');
+                            }else if(cpu_percent >= 80 && cpu_percent <= 100){
+                                $(".cpu_{{ info['container_id'] }} .progress-bar").addClass('bg-red');
+                            }else if(cpu_percent < 60 && cpu_percent >= 0){
+                                $(".cpu_{{ info['container_id'] }} .progress-bar").addClass('bg-green');
+                            }
+
+                            if(memory_percent > 60 && memory_percent < 80){
+                                $(".mem_{{ info['container_id'] }} .progress-bar").addClass('bg-orange');
+                            }else if(memory_percent >= 80){
+                                $(".mem_{{ info['container_id'] }} .progress-bar").addClass('bg-red');
+                            }else{
+                                $(".mem_{{ info['container_id'] }} .progress-bar").addClass('bg-green');
+                            }
+                        }
+                    },
+                    error : function() {
+                        alert('ok');
+                    }
+                });
+        {% endfor %}
     </script>
+    <script src="{{ url_for('static',filename='js/control.js') }}"></script>
+    <!-- bootstrap-progressbar -->
+    <script src="{{ url_for('static', filename='lib/bootstrap-progressbar/bootstrap-progressbar.min.js') }}"></script>
 {% endblock %}
 {% block content %}
     <div class="row top_tiles">
@@ -14,7 +61,7 @@
                 <div class="icon"><i class="fa fa-server"></i></div>
                 <div class="count">{{ allHost }}</div>
                 <h3>主机数量</h3>
-                <p>Number of Host</p>
+                <p>Number of Hosts</p>
             </div>
         </div>
         <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
@@ -22,7 +69,7 @@
                 <div class="icon"><i class="fa fa-cube"></i></div>
                 <div class="count">{{ allContainer }}</div>
                 <h3>容器数量</h3>
-                <p>Number of Container</p>
+                <p>Number of Containers</p>
             </div>
         </div>
         <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
@@ -30,15 +77,15 @@
                 <div class="icon"><i class="fa fa-check-circle"></i></div>
                 <div class="count">{{ runningContainer }}</div>
                 <h3>正在运行</h3>
-                <p>Running Container</p>
+                <p>Running Containers</p>
             </div>
         </div>
         <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
             <div class="tile-stats">
-                <div class="icon"><i class="fa fa-window-maximize"></i></div>
-                <div class="count">1</div>
-                <h3>应用数量</h3>
-                <p>Number of App</p>
+                <div class="icon"><i class="fa fa-floppy-o"></i></div>
+                <div class="count">{{ allImage }}</div>
+                <h3>镜像数量</h3>
+                <p>Number of Images</p>
             </div>
         </div>
     </div>
@@ -70,7 +117,6 @@
                         </tr>
                     {% else %}
                         {% for info in containersList %}
-
                             <tr>
                                 <td>
                                     {% if info['status'] == 'running' %}
@@ -89,17 +135,17 @@
                                     <br />
                                     <small>{{ info['host_id'] | cutStr(0,12) }}</small>
                                 </td>
-                                <td class="project_progress">
+                                <td class="project_progress cpu_{{ info['container_id'] }}">
                                     <div class="progress progress_sm">
-                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57"></div>
+                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal=""></div>
                                     </div>
-                                    <small>占用率 : 57%</small>
+                                    <small></small>
                                 </td>
-                                <td class="project_progress">
+                                <td class="project_progress mem_{{ info['container_id'] }}">
                                     <div class="progress progress_sm">
-                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57"></div>
+                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal=""></div>
                                     </div>
-                                    <small>占用率 : 57%</small>
+                                    <small></small>
                                 </td>
                                 <td>
                                     <a href="#" class="btn btn-danger btn-sm table-control-btn unfollowbtn" value="{{ info['container_id'] }}"> 取消关注 </a>
