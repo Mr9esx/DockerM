@@ -36,8 +36,8 @@ def login():
     if loginForm.validate_on_submit():
         user = User.query.filter_by(username=loginForm.username.data).first()
         if ((user is not None) and check_password_hash(user.password,loginForm.password.data)) and user.username == loginForm.username.data:
-            #, remember=loginForm.remember_me.data
-            login_user(user)
+            # remember=loginForm.remember_me.data
+            login_user(user, remember = True)
             return redirect(request.args.get("next") or url_for('dockerm.index'))
         else:
             flash('login_failed')

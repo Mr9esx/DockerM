@@ -36,7 +36,7 @@
             <div class="col-md-3 left_col menu_fixed">
                 <div class="left_col scroll-view">
                     <div class="navbar nav_title" style="border: 0;">
-                        <a href="index.html" class="site_title"><i class="fa fa-cube"></i> <span>DockerM</span></a>
+                        <a href="{{ url_for ('dockerm.index') }}" class="site_title"><i class="fa fa-cube"></i> <span>DockerM</span></a>
                     </div>
 
                     <div class="clearfix"></div>
@@ -45,12 +45,12 @@
                     <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                         <div class="menu_section">
                             <ul class="nav side-menu">
-                                <li id="index"><a href="/"><i class="fa fa-home "></i> 首页</a></li>
-                                <li id="hosts"><a href="/hosts/"><i class="fa fa-server"></i> 主机 </a></li>
-                                <li id="containers"><a href="/containers/all"><i class="fa fa-cubes"></i> 容器 </a></li>
-                                <li id="images"><a href="/images/all"><i class="fa fa-floppy-o"></i> 镜像 </a></li>
-                                <li id="networks"><a href="/networks/all"><i class="fa fa-sitemap"></i> 网络 </a></li>
-                                <li id="setting"><a href="/setting/"><i class="fa fa-cog"></i> 设置</a></li>
+                                <li id="index"><a href="{{ url_for ('dockerm.index') }}"><i class="fa fa-home "></i> 首页</a></li>
+                                <li id="hosts"><a href="{{ url_for ('dockerm.hostsPage') }}"><i class="fa fa-server"></i> 主机 </a></li>
+                                <li id="containers"><a href="{{ url_for ('dockerm.containersPage', saltstack_id='all') }}"><i class="fa fa-cubes"></i> 容器 </a></li>
+                                <li id="images"><a href="{{ url_for ('dockerm.imagesPage', saltstack_id='all') }}"><i class="fa fa-floppy-o"></i> 镜像 </a></li>
+                                <li id="networks"><a href=""><i class="fa fa-sitemap"></i> 网络 </a></li>
+                                <li id="setting"><a href=""><i class="fa fa-cog"></i> 设置</a></li>
                             </ul>
                         </div>
                         <div class="menu_section">
