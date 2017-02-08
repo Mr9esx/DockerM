@@ -56,7 +56,6 @@ def main():
         msg = json.loads(body)
         print msg['control_type']
         if msg.has_key('saltstack_id') and len(MySQLControl().select(("SELECT saltstack_id FROM hosts WHERE saltstack_id='{}';").format(msg['saltstack_id']))) == 1:
-            print "ok"
             if msg['control_type'] == 'container_info':
                 sql = 'INSERT INTO containers(container_id, container_name, image_id, saltstack_id, created_at, status, info) VALUES("%s","%s","%s","%s","%s","%s","%s") ON DUPLICATE KEY UPDATE status="%s", info="%s";'
                 msg['info'] = MySQLdb.escape_string(msg['info'])
@@ -78,7 +77,6 @@ def main():
                         msg['container_id'], msg['username'], msg['result'])
             MySQLControl().insert(sql, data)
         else:
-            print "no"
             if msg['control_type'] == 'container_state':
                 sql = 'INSERT INTO container_state(container_id,Cpu_percent,Memory_usage,Memory_limit,Memory_percent,Collect_time,rx_packets,tx_packets,rx_bytes,tx_bytes,rx_dropped,tx_dropped,rx_errors,tx_errors,rx_speed,tx_speed) VALUES("%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s");'
                 data = (msg['container_id'], msg['Cpu_percent'], msg['Memory_usage'], msg['Memory_limit'],

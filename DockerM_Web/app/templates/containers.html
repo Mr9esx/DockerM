@@ -406,11 +406,11 @@
                 var env_list = new Array();
 
 
-                var host = $('#host_list_select');
-                var image = $('#image_list_select');
-                var container = $('#container_list_select');
+                var host = $("#host_list_select");
+                var image = $("#image_list_select");
+                var container = $("#container_list_select");
                 //获取主机信息，设置主机下拉框
-                $.getJSON('/api/get/hosts/', function (data) {
+                $.getJSON("/api/get/hosts/", function (data) {
                     host.empty();
                     host.select2({
                         data: data,
@@ -421,7 +421,7 @@
                             return format;
                         },
                         templateSelection: function (repo){
-                            $.getJSON('/api/get/images/'+repo.text, function (data) {
+                            $.getJSON("/api/get/images/"+repo.text, function (data) {
                                 image.empty();
                                 image.select2({
                                     data: data,
@@ -444,7 +444,7 @@
                                     }
                                 });
                             });
-                            $.getJSON('/api/get/containers/'+repo.text, function (data) {
+                            $.getJSON("/api/get/containers/"+repo.text, function (data) {
                                 container.empty();
                                 container.select2({
                                     data: data,
@@ -595,7 +595,9 @@
                 });
 
                 $("#add_link").click(function () {
+
                     var alias = null;
+
                     try {
                         var container_name = container.select2("data")[0].text;
                     }
@@ -603,11 +605,13 @@
                         showError($("#add_link"), $("#link_list"), 'container_isset', '请选择容器！');
                         return false;
                     }
+
                     if($("#link_container_alias").val() != ""){
                         alias = $("#link_container_alias").val();
                     }else{
                         alias = container_name;
                     }
+
                     if(link_list.length == 0){
                         $("#link_list").append("<span class='tag'><span data-container-name='"+container_name+"' data-alias='"+alias+"' style='padding-right:8px;'>"+container_name+"<span class='alias'>["+alias+"]</span></span><i class='remove_tag fa fa-close' title='删除链接'></i></span>");
 {#                        $("#link_list").children('.tag').on("click",".remove_tag",function(){#}
@@ -678,9 +682,6 @@
                     return size + " B"
                 }
             }
-
-
-            $(".remove_tag").click(function(){alert("ok!")});
 
         });
     </script>

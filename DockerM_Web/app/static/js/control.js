@@ -1,19 +1,21 @@
 $(document).ready(function(){
+
     function getRootPath() {
         var pathName = window.location.pathname.substring(1);
         var webName = pathName == '' ? '' : pathName.substring(0, pathName.indexOf('/'));
         return window.location.protocol + '//' + window.location.host + '/'+ webName;
     }
+
     var stack_bar_top = {"dir1": "up", "dir2": "left", "push": "top", "spacing1": 0, "spacing2": 15};
     $('.startbtn').click(function () {
         container_id = $(this).attr('value');
         container_name = $(this).attr('data-name');
         $.ajax({
-            url: "/control/container/start_container",    //请求的url地址
-            dataType: "json",   //返回格式为json
-            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
-            data: { "container_id": container_id, "container_name": container_name },    //参数值
-            type: "POST",   //请求方式
+            url: "/control/container/start_container",
+            dataType: "json",
+            async: true,
+            data: { "container_id": container_id, "container_name": container_name },
+            type: "POST",
             success: function(req) {
                 createPNotify(req['title'],req['text'],req['status']);
             },error: function (req) {
@@ -26,11 +28,11 @@ $(document).ready(function(){
         container_id = $(this).attr('value');
         container_name = $(this).data('name');
         $.ajax({
-            url: "/control/container/stop_container",    //请求的url地址
-            dataType: "json",   //返回格式为json
-            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
-            data: { "container_id": container_id, "container_name": container_name },    //参数值
-            type: "POST",   //请求方式
+            url: "/control/container/stop_container",
+            dataType: "json",
+            async: true,
+            data: { "container_id": container_id, "container_name": container_name },
+            type: "POST",
             success: function(req) {
                 createPNotify(req['title'],req['text'],req['status']);
             },error: function (req) {
@@ -44,11 +46,11 @@ $(document).ready(function(){
         shortID = container_id.substring(0,12)
         $(this).children('span').text('容器恢复中...');
         $.ajax({
-            url: "/container/control/unpause",    //请求的url地址
-            dataType: "json",   //返回格式为json
-            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
-            data: { "container_id": container_id },    //参数值
-            type: "POST",   //请求方式
+            url: "/container/control/unpause",
+            dataType: "json",
+            async: true,
+            data: { "container_id": container_id },
+            type: "POST",
             success: function(req) {
                 createPNotify(req['title'],req['text'],req['status']);
             },error: function (req) {
@@ -62,11 +64,11 @@ $(document).ready(function(){
         shortID = container_id.substring(0,12)
         $(this).children('span').text('容器暂停中...');
         $.ajax({
-            url: "/container/control/pause",    //请求的url地址
-            dataType: "json",   //返回格式为json
-            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
-            data: { "container_id": container_id },    //参数值
-            type: "POST",   //请求方式
+            url: "/container/control/pause",
+            dataType: "json",
+            async: true,
+            data: { "container_id": container_id },
+            type: "POST",
             success: function(req) {
                 createPNotify(req['title'],req['text'],req['status']);
             },error: function (req) {
@@ -80,11 +82,11 @@ $(document).ready(function(){
         shortID = container_id.substring(0,12)
         $(this).children('span').text('容器删除中...');
         $.ajax({
-            url: "/container/control/delete",    //请求的url地址
-            dataType: "json",   //返回格式为json
-            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
-            data: { "container_id": container_id },    //参数值
-            type: "POST",   //请求方式
+            url: "/container/control/delete",
+            dataType: "json",
+            async: true,
+            data: { "container_id": container_id },
+            type: "POST",
             success: function(req) {
                 createPNotify(req['title'],req['text'],req['status']);
             },error: function (req) {
@@ -97,11 +99,11 @@ $(document).ready(function(){
         container_id = $(this).attr('value');
         container_name = $(this).attr('data-name');
         $.ajax({
-            url: "/control/container/follow",    //请求的url地址
-            dataType: "json",   //返回格式为json
-            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
-            data: { "container_id": container_id },    //参数值
-            type: "POST",   //请求方式
+            url: "/control/container/follow",
+            dataType: "json",
+            async: true,
+            data: { "container_id": container_id },
+            type: "POST",
             success: function(req) {
                 createPNotify(req['title'],req['text'],req['status']);
             }
@@ -130,7 +132,7 @@ $(document).ready(function(){
     });
 
     $('.refreshbtn').click(function () {
-        alert('ok');
+
     });
 
     $('#addHost_btn').click(function (){

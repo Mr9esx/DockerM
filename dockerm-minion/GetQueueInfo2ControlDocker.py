@@ -69,7 +69,7 @@ def main():
     def callback(ch, method, properties, body):
         msg = json.loads(body)
         conn = DockerControl()
-        if msg['control_type'] == 'start_container':
+        if msg['control_type'] == 'start':
             info, result = conn.start_container(msg['body']['container_id'])
             print result
             if result == 'notfound':
@@ -80,7 +80,7 @@ def main():
             sendMsg2MQ(
                     formatLogsStats(msg['control_type'], result, msg['body']['container_id'], HOST_ID, msg['username']))
 
-        elif msg['control_type'] == 'stop_container':
+        elif msg['control_type'] == 'stop':
             info, result = conn.stop_container(msg['body']['container_id'])
             if result == 'notfound':
                 info = {'State': {'Status': 'deleted', 'Type': 'notfound'}}
@@ -90,7 +90,7 @@ def main():
             sendMsg2MQ(
                     formatLogsStats(msg['control_type'], result, msg['body']['container_id'], HOST_ID, msg['username']))
 
-        elif msg['control_type'] == 'del_container':
+        elif msg['control_type'] == 'del':
             info, result = conn.create_container(msg['body']['container_id'])
             if result == 'notfound':
                 info = {'State': {'Status': 'deleted', 'Type': 'notfound'}}
@@ -100,7 +100,7 @@ def main():
             sendMsg2MQ(
                     formatLogsStats(msg['control_type'], result, msg['body']['container_id'], HOST_ID, msg['username']))
 
-        elif msg['control_type'] == 'create_container':
+        elif msg['control_type'] == 'create':
             info, result = conn.create_container(msg['body']['container_name'], msg['body']['hostname'], msg['body']['image'], msg['body']['port'], msg['body']['link'], msg['body']['command'])
             if result != 'error':
                 sendMsg2MQ(formatUpdateStats(info, msg['body']['container_id']))

@@ -77,7 +77,7 @@ def getAllContainerList(saltstack_id):
 def containerControl(control_type):
     print control_type
     user = getUser(session['user_id'])
-    if control_type == 'start_container':
+    if control_type == 'start':
         saltstack_id = getHostInfoByContainerID(request.form['container_id']).saltstack_id
         if (checkHost(saltstack_id)):
             pushMsg(control_type, user.username, {"container_id": request.form['container_id']}, getHostInfoByContainerID(request.form['container_id']).saltstack_id).push()
@@ -86,7 +86,7 @@ def containerControl(control_type):
                                                                                        0:12] + u'] 成功！',})
         else:
             return jsonify({'status': 'error', 'title': '操作发送失败！', 'text': u'失败！' + saltstack_id + u' 主机无法访问！'})
-    elif control_type == 'stop_container':
+    elif control_type == 'stop':
         saltstack_id = getHostInfoByContainerID(request.form['container_id']).saltstack_id
         print saltstack_id
         if (checkHost(saltstack_id)):
