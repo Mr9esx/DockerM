@@ -2,19 +2,20 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_mail import Mail
 from lib.jinja2models import *
 
 from config import config
 
 db = SQLAlchemy()
 lm = LoginManager()
+mail = Mail()
 lm.session_protection = 'strong'
 lm.login_view = 'dockermAuth.login'
 
 # 函数工厂，批量注册
 def create_app(config_name):
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'This is DockerM'
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
@@ -22,6 +23,7 @@ def create_app(config_name):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     db.init_app(app)
     lm.init_app(app)
+    mail.init_app(app)
 
     #注册自定义函数init_app
     env = app.jinja_env
