@@ -11,7 +11,7 @@ $(document).ready(function(){
         container_id = $(this).attr('value');
         container_name = $(this).attr('data-name');
         $.ajax({
-            url: "/control/container/start_container",
+            url: "/control/container/start",
             dataType: "json",
             async: true,
             data: { "container_id": container_id, "container_name": container_name },
@@ -28,7 +28,7 @@ $(document).ready(function(){
         container_id = $(this).attr('value');
         container_name = $(this).data('name');
         $.ajax({
-            url: "/control/container/stop_container",
+            url: "/control/container/stop",
             dataType: "json",
             async: true,
             data: { "container_id": container_id, "container_name": container_name },
@@ -182,7 +182,7 @@ $(document).ready(function(){
 
         //获取端口
         $("#port_list").children('.tag').each(function() {
-            var tmp = "{"+"\"container-port\" : \""+($(this).children('span').data('container-prot'))+"\",\"protocol\" : \""+($(this).children('span').data('protocol'))+"\",\"host-addredd\" : \""+($(this).children('span').data('host-addredd'))+"\",\"host-port\" : \""+($(this).children('span').data('host-port'))+"\"}";
+            var tmp = "{"+"\"container-port\" : \""+($(this).children('span').data('container-port'))+"\",\"protocol\" : \""+($(this).children('span').data('protocol'))+"\",\"host-addredd\" : \""+($(this).children('span').data('host-addredd'))+"\",\"host-port\" : \""+($(this).children('span').data('host-port'))+"\"}";
             port_list.push(tmp);
         });
         // console.log(port_list);

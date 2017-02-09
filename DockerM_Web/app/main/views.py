@@ -39,6 +39,8 @@ def hostsPage():
     all_hosts = getAllHostAndPaginate(request.args.get('page'))
 
     for host_info in all_hosts.items:
+        for info in host_info.image_list:
+            print info.image_id
         host_list.append({'saltstack_id': host_info.saltstack_id, 'created_at': host_info.created_at, 'created_by': host_info.created_by, 'host_info': simplejson.loads(host_info.host_info)})
 
     return render_template('hosts.html',

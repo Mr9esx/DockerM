@@ -5,12 +5,13 @@ from datetime import datetime
 from flask import  session, redirect, url_for,jsonify,g,request
 from flask_login import login_required
 import salt.client
+import re
 import simplejson
 
 from . import dockermApi
 from ..lib.rawSQL import rawSQLControl
 from .. import db
-from ..lib.dbModel import Hosts
+from ..lib.dbModel import Hosts, Images, Containers
 from ..lib.dbController import getUser, getAllImage2Host, getAllHost, getAllContainer2Host, getHostInfoByContainerID, HostisExited
 from ..lib.pushMsg import pushMsg
 from ..lib.tools import createContainer
@@ -102,9 +103,33 @@ def containerControl(control_type):
         print 'unfollow'
         updateContainerFollowState(request.form['container_id'], 0)
     elif control_type == 'create':
-        if (checkHost(request.form['saltstack_id'])):
+        saltstack_id = request.form['saltstack_id']
+        if (checkHost(saltstack_id)):
+            image_id = request.form['image_id']
+
+            for link in request.form.getlist("link[]"):
+                link_dict = simplejson.loads(link)
+                if Containers.query.filter_by(container_name=link_dict.keys()[0]).first() is None:
+                    return jsonify({'status': 'error', 'title': '操作失败！', 'text': u'失败！所链接的容器不存在！'})
+
+            for port in request.form.getlist("port[]"):
+                port_dict = simplejson.loads(port)
+                try:
+                    int(port_dict['container-port'])
+                    int(port_dict['host-port'])
+                except ValueError:
+                    return jsonify({'status': 'error', 'title': '操作失败！', 'text': u'失败！端口只能是数字！'})
+                if not re.compile('^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$').match('55.258.365.12'):
+                    return jsonify({'status': 'error', 'title': '操作失败！', 'text': u'失败！IP 地址不规范！'})
+
+            if Images.query.filter_by(image_id=image_id).first() is None:
+                return jsonify({'status': 'error', 'title': '操作失败！', 'text': u'失败！无此镜像！'})
+
             pushMsg('create', user.username,
-                    {"container_name": request.form['container_name'], "saltstack_id": request.form['saltstack_id'],"image": request.form['image_name'], "hostname": request.form['hostname'], "command": request.form["command"].replace(',', ' && '), "link": request.form.getlist("link[]"), "port": request.form.getlist("port[]")},
+                    {"container_name": request.form['container_name'], "saltstack_id": saltstack_id,
+                     "image": image_id, "hostname": request.form['hostname'],
+                     "command": request.form["command"].replace(',', ' && '), "link": request.form.getlist("link[]"),
+                     "port": request.form.getlist("port[]")},
                     request.form['saltstack_id'].encode('utf-8')).push()
 
             return jsonify({'status': 'success', 'title': '操作发送成功！', 'text': u'成功！容器已创建！'})

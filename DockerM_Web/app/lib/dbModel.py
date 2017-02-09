@@ -44,7 +44,7 @@ class Containers(db.Model):
     container_id = db.Column(db.String(64),primary_key=True)
     container_name = db.Column(db.String(64))
     image_id = db.Column(db.String(64))
-    saltstack_id = db.Column(db.String(64))
+    saltstack_id = db.Column(db.String(64), db.ForeignKey('hosts.saltstack_id'))
     created_at = db.Column(db.DateTime)
     status = db.Column(db.String(64))
     info = db.Column(db.Text)
@@ -70,6 +70,8 @@ class Hosts(db.Model):
     created_at = db.Column(db.DateTime)
     created_by = db.Column(db.String(64))
     host_info = db.Column(db.Text)
+    image_list = db.relationship('Images', backref='hosts', lazy='dynamic')
+    container_list = db.relationship('Containers', backref='hosts', lazy='dynamic')
 
     # 构造函数
     def __init__(self,saltstack_id,created_at,created_by,host_info):
@@ -87,7 +89,7 @@ class Images(db.Model):
     __tablename__ = 'images'
     image_id = db.Column(db.String(64), primary_key=True)
     image_name = db.Column(db.Text)
-    saltstack_id = db.Column(db.String(64))
+    saltstack_id = db.Column(db.String(64), db.ForeignKey('hosts.saltstack_id'))
     created_at = db.Column(db.DateTime)
     info = db.Column(db.Text)
     history = db.Column(db.Text)
