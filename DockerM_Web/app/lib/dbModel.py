@@ -1,42 +1,81 @@
 # -*- coding:utf-8 -*-
 # Flask-SQLAlchemy 操作数据库
-from .. import db
-from werkzeug.security import generate_password_hash
-import time
+from .. import db, lm
+from flask import current_app
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import TimedJSONWebSignatureSerializer
 
 
 class User(db.Model):
     __tablename__ = 'user'
-    id = db.Column(db.Integer,primary_key=True)
-    username = db.Column(db.String(128),unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
-    email = db.Column(db.String(128),primary_key=True)
-    level = db.Column(db.Integer)
-    confirmed = db.Column(db.Integer)
+    email = db.Column(db.String(128), unique=True)
+    confirmed = db.Column(db.Boolean, default=False)
 
-    # 构造函数
-    def __init__(self,username,password,email,level):
-        self.username = username
-        self.password = password
-        self.email = email
-        self.level = level
-        self.confirmed = 1
-
-    def is_authenticated(self):
-        return True
-
+    @property
     def is_active(self):
         return True
 
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
     def is_anonymous(self):
         return False
 
     def get_id(self):
         return unicode(self.id)
 
+    @property
+    def hash_password(self):
+        raise AttributeError(u'密码不可读！')
+
+    @hash_password.setter
+    def hash_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def generate_confirmation_token(self, expiration=10):
+        """
+        :param expiration: 超时时间，默认3600秒。
+        :return: 令牌
+        """
+        sersializer = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
+        return sersializer.dumps({'confirm': self.id})
+
+    def confirm(self, token):
+        sersializer = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = sersializer.loads(token)
+        except:
+            return False
+        if data.get('confirm') != self.id:
+            print "no"
+            return False
+        print "ok"
+        self.confirmed = True
+        db.session.add(self)
+        return True
+
+    def verify_password(self, form_data_password):
+        """
+        :param form_data_password: 表单传入的密码
+        :return: 布尔值
+        """
+        return check_password_hash(self.password, form_data_password)
+
     def to_dict(self):
         column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
         return dict((column_name, getattr(self, column_name, None)) for column_name in column_name_list)
+
+
+@lm.user_loader
+def load_user(id):
+    user = User.query.filter_by(id=id).first()
+    return user
 
 
 class Containers(db.Model):
@@ -48,15 +87,6 @@ class Containers(db.Model):
     created_at = db.Column(db.DateTime)
     status = db.Column(db.String(64))
     info = db.Column(db.Text)
-
-    # 构造函数
-    def __init__(self, container_id, container_name, saltstack_id, created_at, status, info):
-        self.container_id = container_id
-        self.container_name = container_name
-        self.saltstack_id = saltstack_id
-        self.created_at = created_at
-        self.status = status
-        self.info = info
 
     def to_dict(self):
         column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
@@ -73,13 +103,6 @@ class Hosts(db.Model):
     image_list = db.relationship('Images', backref='hosts', lazy='dynamic')
     container_list = db.relationship('Containers', backref='hosts', lazy='dynamic')
 
-    # 构造函数
-    def __init__(self,saltstack_id,created_at,created_by,host_info):
-        self.saltstack_id = saltstack_id
-        self.created_at = created_at
-        self.created_by = created_by
-        self.host_info = host_info
-
     def to_dict(self):
         column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
         return dict((column_name, getattr(self, column_name, None)) for column_name in column_name_list)
@@ -93,14 +116,6 @@ class Images(db.Model):
     created_at = db.Column(db.DateTime)
     info = db.Column(db.Text)
     history = db.Column(db.Text)
-
-    def __init__(self, image_id, image_name, saltstack_id, created_at, info, history):
-        self.image_id = image_id
-        self.image_name = image_name
-        self.saltstack_id = saltstack_id
-        self.created_at = created_at
-        self.info = info
-        self.history = history
 
     def to_dict(self):
         column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]

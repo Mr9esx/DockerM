@@ -1,7 +1,5 @@
 # -*- coding:utf-8 -*-
 from .. import db
-from werkzeug.security import generate_password_hash
-import time
 from sqlalchemy import desc
 
 from dbModel import User, Hosts, Containers, Images, Container_Status, Operation_Log
@@ -33,55 +31,6 @@ def getOperationLog2HostAndPaginate(host_id, page):
 
 
 """用户操作"""
-
-
-def createUser(username, password, email, level):
-    """
-    @:return:创建用户函数
-    @:rtype:bool
-    @:param username:用户名
-    @:param password:用户密码
-    @:param email:用户邮箱地址
-    @:param level:用户权限
-    """
-    try:
-        password = generate_password_hash(password)
-        u = User(username, password, email, level)
-        db.session.add(u)
-        db.session.commit()
-        # 添加：日志纪录（用户注册成功）
-        return True
-    except Exception, e:
-        db.session.rollback
-        return False
-
-
-def checkUserIsRegister(username):
-    """
-    @:return:检查用户名是否已经注册了
-    @:rtype:bool
-    @:param username:用户名
-    """
-    userisexited = User.query.filter_by(username=username).first()
-    if userisexited == None:
-        return True
-    else:
-        # 添加：日志纪录（用户注册失败）
-        return False
-
-
-def checkEmailIsRegister(email):
-    """
-    @:return:检查用户邮箱地址是否已经注册了
-    @:rtype:bool
-    @:param email:用户邮箱地址
-    """
-    emailisexited = User.query.filter_by(email=email).first()
-    if emailisexited == None:
-        return True
-    else:
-        # 添加：日志纪录（用户注册失败）
-        return False
 
 
 def getUser(user_id):

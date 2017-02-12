@@ -112,7 +112,11 @@
                         }
                     },
                     error : function() {
-                        console.log('error');
+                        var Container_id = '{{ container_id }}';
+                        drawMemPer(Container_id,'','容器内存使用率','None','None');
+                        drawCpuPer(Container_id,'','容器处理器使用率');
+                        drawNetwrok(Container_id,'','','容器网络上下行速率');
+                        console.log('cannot get data!');
                     }
                 });
                 function drawMemPer(Container_id,data,title,Mem_limit,data2){
@@ -642,22 +646,45 @@
                 </div>
             {% endif %}
             <div class="x_panel">
-                <div class="" role="tabpanel" data-example-id="togglable-tabs" style="padding: 0;">
-                    <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
-                        <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">容器监控</a></li>
-                        <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">网络信息</a></li>
-                        <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">环境变量</a></li>
-                        <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">容器详细信息</a></li>
-                        <li role="presentation" class=""><a href="#tab_content5" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">操作历史</a></li>
-                        <li role="presentation" class=""><a href="#tab_content6" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">容器日志</a></li>
-                    </ul>
-                    <div id="myTabContent" class="tab-content" style="padding-top: 10px;">
-                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
-                            <div id="container_cpu_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
-                            <div id="container_mem_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
-                            <div id="container_network" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
-                        </div>
-                        <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                <ul id="myTab" class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#container-monitor" data-toggle="tab">
+                             容器监控
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#network-info" data-toggle="tab">
+                             网络信息
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#env" data-toggle="tab">
+                             环境变量
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#detail-info" data-toggle="tab">
+                             容器详细信息
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#operations-log" data-toggle="tab">
+                             操作历史
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#container-log" data-toggle="tab">
+                             容器日志
+                        </a>
+                    </li>
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                    <div class="tab-pane fade in active" id="container-monitor">
+                        <div id="container_cpu_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                        <div id="container_mem_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                        <div id="container_network" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                    </div>
+                    <div class="tab-pane fade" id="network-info">
                         {% for d in netInfo %}
                             <div class="col-md-3 col-xs-12 widget widget_tally_box">
                                 <div class="x_panel">
@@ -681,25 +708,23 @@
                                 </div>
                             </div>
                         {% endfor %}
-
-                        </div>
-                        <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab">
-                            <blockquote>
+                    </div>
+                    <div class="tab-pane fade" id="env">
+                        <blockquote>
                             {% for info in info['Config']['Env'] %}
                                 {{ info }}<br>
                             {% endfor %}
-                            </blockquote>
-                        </div>
-                        <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">
-                            <textarea style="width: 100%;min-height:400px;">{{ info | showJsonPage }}</textarea>
-                            <a href="/container/download/inspect/{{ container_id }}" type="button" class="btn btn-default" style="margin-top: 10px;"><i class="fa fa-download"></i> 下载详细信息</a>
-                        </div>
-                        <div role="tabpanel" class="tab-pane fade" id="tab_content5" aria-labelledby="profile-tab">
-                            操作历史
-                        </div>
-                        <div role="tabpanel" class="tab-pane fade" id="tab_content6" aria-labelledby="profile-tab">
-                            容器日志
-                        </div>
+                        </blockquote>
+                    </div>
+                    <div class="tab-pane fade" id="detail-info">
+                        <textarea style="width: 100%;min-height:600px;">{{ info | showJsonPage }}</textarea>
+                        <a href="/container/download/inspect/{{ container_id }}" type="button" class="btn btn-default" style="margin-top: 10px;"><i class="fa fa-download"></i> 下载详细信息</a>
+                    </div>
+                    <div class="tab-pane fade" id="operations-log">
+                        操作历史
+                    </div>
+                    <div class="tab-pane fade" id="container-log">
+                        容器日志
                     </div>
                 </div>
             </div>

@@ -1,0 +1,7 @@
+尊敬的 {{ user.username }}:
+
+欢迎使用 DockerM 平台!
+
+请点击该链接 {{ url_for('dockermAuth.confirm', token=token, _external=True) }} 激活你的账号。
+
+DockerM 团队

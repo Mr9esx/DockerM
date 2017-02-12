@@ -15,11 +15,15 @@ class Config:
     RABBITMQ_USER = 'dockerm'
     RABBITMQ_PASSWD = '123456'
 
+    # 是否启用邮箱认证
+    CONFIRMED = True
+
     MAIL_SERVER = 'smtp.qq.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    FLASKY_MAIL_SENDER = '1138099359@qq.com'
 
     @staticmethod
     def init_app(app):

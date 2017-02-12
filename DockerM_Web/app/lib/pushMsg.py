@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 import pika,json
 from flask import current_app
-from dbController import getHostInfoByContainerID
 
 
 class pushMsg(object):

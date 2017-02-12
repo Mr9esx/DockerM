@@ -12,6 +12,7 @@ lm = LoginManager()
 mail = Mail()
 lm.session_protection = 'strong'
 lm.login_view = 'dockermAuth.login'
+lm.login_message = u'请登陆！'
 
 # 函数工厂，批量注册
 def create_app(config_name):

@@ -1,0 +1,60 @@
+<div class="" role="tabpanel" data-example-id="togglable-tabs" style="padding: 0;">
+                    <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">容器监控</a></li>
+                        <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">网络信息</a></li>
+                        <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">环境变量</a></li>
+                        <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">容器详细信息</a></li>
+                        <li role="presentation" class=""><a href="#tab_content5" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">操作历史</a></li>
+                        <li role="presentation" class=""><a href="#tab_content6" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">容器日志</a></li>
+                    </ul>
+                    <div id="myTabContent" class="tab-content" style="padding-top: 10px;">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                            <div id="container_cpu_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                            <div id="container_mem_per" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                            <div id="container_network" class="col-md-12 col-xs-12" style="padding: 0px !important;height:300px;"></div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                        {% for d in netInfo %}
+                            <div class="col-md-3 col-xs-12 widget widget_tally_box">
+                                <div class="x_panel">
+                                    <div class="x_title"  style="text-align: center !important;">
+                                        <div style="font-size: 20px">{{ d['Network_name'] }}</div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                    <div class="x_content">
+                                        <div><b>IP 地址</b> : <span class="pull-right">{{ d['IPAddress'] }}</span></div>
+                                        <div style="margin-top: 10px;"><b>物理地址</b> : <span class="pull-right">{{ d['MacAddress'] }}</span></div>
+                                        <div style="margin-top: 10px;"><b>网关地址</b> : <span class="pull-right">{{ d['Gateway'] }}</span></div>
+                                        <div style="margin-top: 10px;"><b>子网掩码</b> : <span class="pull-right">{{ d['IPPrefixLen'] }}</span></div>
+                                        {% for x in portInfo %}
+                                            <div class="port-mapped">
+                                                <b>{{ x['inside_port'] }}</b>
+
+                                                <a href="{{ x['link'] }}" target="_blank" style="text-decoration: none;">{{ x['outside_port'] }}</a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab">
+                            <blockquote>
+                            {% for info in info['Config']['Env'] %}
+                                {{ info }}<br>
+                            {% endfor %}
+                            </blockquote>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">
+                            <textarea style="width: 100%;min-height:400px;">{{ info | showJsonPage }}</textarea>
+                            <a href="/container/download/inspect/{{ container_id }}" type="button" class="btn btn-default" style="margin-top: 10px;"><i class="fa fa-download"></i> 下载详细信息</a>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content5" aria-labelledby="profile-tab">
+                            操作历史
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="tab_content6" aria-labelledby="profile-tab">
+                            容器日志
+                        </div>
+                    </div>
+                </div>

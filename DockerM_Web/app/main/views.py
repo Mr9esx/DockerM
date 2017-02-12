@@ -31,7 +31,7 @@ def index():
                            ping=ping)
 
 
-@dockerm.route('/hosts/', methods=['GET'])
+@dockerm.route('/hosts', methods=['GET'])
 @login_required
 def hostsPage():
     user = getUser(session['user_id'])
@@ -126,7 +126,7 @@ def imagesPage(saltstack_id):
             all_host = getAllHost()
 
             for tmp in all_containers.items:
-                container_list.append(
+                image_list.append(
                     {'image_name': tmp.image_name, 'image_id': tmp.image_id,
                      'saltstack_id': tmp.saltstack_id, 'created_at': tmp.created_at,
                      'json_info': simplejson.loads(tmp.info)})

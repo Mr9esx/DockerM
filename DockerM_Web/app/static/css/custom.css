@@ -694,8 +694,9 @@ a:hover, a:focus {
   padding: 10px 15px;
   color: #34495E !important; }
 
-.nav > li > a:hover, .nav > li > a:focus {
-  background-color: transparent; }
+/*bs tabs导航栏样式出错，注释*/
+/*.nav > li > a:hover, .nav > li > a:focus {*/
+  /*background-color: transparent; }*/
 
 .top_search {
   padding: 0; }

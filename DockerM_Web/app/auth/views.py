@@ -1,35 +1,70 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
-from flask import render_template, session, redirect, url_for, flash, g, request
+from flask import render_template, session, redirect, url_for, flash, g, request, current_app
 from flask_login import login_user, logout_user, current_user, login_required
 from . import dockermAuth
-from .. import lm
+from .. import db
 from .forms import LoginForm, RegisterForm
 from ..lib.dbModel import User
-from ..lib.dbController import checkUserIsRegister, checkEmailIsRegister, createUser
-from werkzeug.security import check_password_hash
+from ..lib.sendemail import send_email
 
 
-@dockermAuth.before_request
+# before_request在当前蓝本，before_app_request在全局
+@dockermAuth.before_app_request
 def before_request():
-    g.user = current_user
+    if current_user.is_authenticated and current_app._get_current_object().config['CONFIRMED']:
+        if not current_user.confirmed \
+                and request.endpoint \
+                and request.endpoint[:12] != 'dockermAuth.' \
+                and request.endpoint != 'static':
+            return redirect(url_for('dockermAuth.unconfirmed'))
 
 
-@lm.user_loader
-def load_user(id):
-    user = User.query.filter_by(id=id).first()
-    return user
+@dockermAuth.route('/confirm/<token>', methods=['GET', 'POST'])
+@login_required
+def confirm(token):
+    if not current_app._get_current_object().config['CONFIRMED']:
+        return redirect(url_for('dockerm.index'))
+    if current_user.confirmed:
+        return redirect(url_for('dockerm.index'))
+    if current_user.confirm(token):
+        flash(u'确认成功！', 'success')
+        return redirect(url_for('dockerm.index'))
+    else:
+        flash(u'链接无效或过期！', 'error')
+        return redirect(url_for('dockermAuth.unconfirmed'))
+
+
+@dockermAuth.route('/unconfirmed', methods=['GET'])
+def unconfirmed():
+    if current_user.is_anonymous or current_user.confirmed:
+        return redirect(url_for('dockermAuth.login'))
+    if not current_app._get_current_object().config['CONFIRMED']:
+        return redirect(url_for('dockerm.index'))
+    return render_template('unconfirmed.html', username=current_user.username)
+
+
+@dockermAuth.route('/resendfirmed', methods=['GET'])
+@login_required
+def resendconfirmed():
+    if not current_app._get_current_object().config['CONFIRMED']:
+        return redirect(url_for('dockerm.index'))
+    if not current_user.confirmed:
+        token = current_user.generate_confirmation_token()
+        send_email(current_user.email, 'mail/confirm_temp', user=current_user.username, token=token)
+        flash(u'已重新发送一封认证邮件到您的邮箱！', 'success')
+        return redirect(url_for('dockermAuth.unconfirmed'))
+    return redirect(url_for('dockerm.index'))
 
 
 @dockermAuth.route('/login', methods=['GET', 'POST'])
 def login():
     # 已登陆
-    print current_user
-    if g.user is not None and g.user.is_authenticated:
+    if current_user is not None and current_user.is_authenticated:
         session['_fresh'] = False
         return redirect(url_for('dockerm.index'))
-    if g.user.is_active is True:
-        print('active is True')
+    if current_user.is_active is True:
+        pass
     else:
         pass
         # 提示尚未登陆
@@ -37,14 +72,17 @@ def login():
     loginform = LoginForm()
     registerform = RegisterForm()
     if loginform.validate_on_submit():
-        user = User.query.filter_by(username=loginform.username.data).first()
-        if ((user is not None) and check_password_hash(user.password,
-                                                       loginform.password.data)):
+        username = loginform.username.data
+        if '@' in username:
+            user = User.query.filter_by(email=username).first()
+        else:
+            user = User.query.filter_by(username=username).first()
+        if (user is not None) and user.verify_password(loginform.password.data):
             # remember=loginform.remember_me.data
             login_user(user, remember=True)
             return redirect(request.args.get("next") or url_for('dockerm.index'))
         else:
-            flash('login_failed')
+            flash(u'用户名或者密码错误！', 'error')
     return render_template('login.html',
                            loginform=loginform,
                            registerform=registerform,
@@ -53,34 +91,30 @@ def login():
                            current_time=datetime.utcnow())
 
 
-@dockermAuth.route('/logout', methods=['GET'])
-@login_required
-def login_out():
-    logout_user()
-    flash('logout')
-    return redirect(url_for('dockermAuth.login'))
-
-
 @dockermAuth.route('/register', methods=['POST'])
 def register():
     registerform = RegisterForm()
-    cuir = checkUserIsRegister(username=registerform.username.data)
-    ceir = checkEmailIsRegister(registerform.email.data)
-    if (cuir and ceir) and (((registerform.password.validate('Length') and registerform.username.validate(
-            'Length')) and (registerform.password.validate('Regexp') and registerform.email.validate('Email')))):
-        if createUser(registerform.username.data, password=registerform.password.data, email=registerform.email.data,
-                      level=1):
-            flash('register_succeed', u'请登录！')
-            return redirect((url_for('dockermAuth.login')))
-        else:
-            flash('error', u'未知错误!请联系管理员!')
-            return redirect((url_for('dockermAuth.login', _anchor='signup')))
+    if registerform.validate_on_submit():
+        app = current_app._get_current_object()
+        user = User(username=registerform.username.data, hash_password=registerform.password.data,
+                    email=registerform.email.data, confirmed=0)
+        db.session.add(user)
+        db.session.commit()
+        if app.config['CONFIRMED']:
+            token = user.generate_confirmation_token()
+            send_email(registerform.email.data, 'mail/confirm_temp', user=user, token=token)
+        flash(u'注册成功！', 'success')
+        return redirect((url_for('dockermAuth.login', _anchor='login')))
     else:
-        msg = registerform.errors
-        if len(msg) > 0:
-            flash('register_failed', msg[msg.keys()[0]][0])
-        elif not cuir:
-            flash('register_failed', u'账号已存在！')
-        elif not ceir:
-            flash('register_failed', u'邮箱已存在！')
+        for error in registerform.errors:
+            for info in registerform.errors[error]:
+                flash(unicode(info), 'error')
         return redirect((url_for('dockermAuth.login', _anchor='signup')))
+
+
+@dockermAuth.route('/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    flash(u'注销成功！', 'success')
+    return redirect(url_for('dockermAuth.login'))
