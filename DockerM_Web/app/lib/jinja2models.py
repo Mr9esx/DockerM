@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import simplejson
+import json
 import time
 import datetime
 import re
@@ -7,7 +7,7 @@ import re
 
 # 格式化显示在JSON信息页面的json信息
 def showJsonPage(jsonstr):
-    return simplejson.dumps(jsonstr, indent=4);
+    return json.dumps(jsonstr, indent=4);
 
 
 # 格式化网络json信息

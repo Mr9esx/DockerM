@@ -63,12 +63,6 @@ def login():
     if current_user is not None and current_user.is_authenticated:
         session['_fresh'] = False
         return redirect(url_for('dockerm.index'))
-    if current_user.is_active is True:
-        pass
-    else:
-        pass
-        # 提示尚未登陆
-        # flash('no_login')
     loginform = LoginForm()
     registerform = RegisterForm()
     if loginform.validate_on_submit():
@@ -97,7 +91,7 @@ def register():
     if registerform.validate_on_submit():
         app = current_app._get_current_object()
         user = User(username=registerform.username.data, hash_password=registerform.password.data,
-                    email=registerform.email.data, confirmed=0)
+                    email=registerform.email.data, confirmed=(not current_app._get_current_object().config['CONFIRMED']))
         db.session.add(user)
         db.session.commit()
         if app.config['CONFIRMED']:

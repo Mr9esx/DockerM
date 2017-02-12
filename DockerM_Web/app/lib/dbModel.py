@@ -2,7 +2,7 @@
 # Flask-SQLAlchemy 操作数据库
 from .. import db, lm
 from flask import current_app
-from flask_login import UserMixin
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer
 
@@ -14,6 +14,7 @@ class User(db.Model):
     password = db.Column(db.String(128))
     email = db.Column(db.String(128), unique=True)
     confirmed = db.Column(db.Boolean, default=False)
+    token_created_at = db.Column(db.DateTime)
 
     @property
     def is_active(self):
@@ -38,12 +39,14 @@ class User(db.Model):
     def hash_password(self, password):
         self.password = generate_password_hash(password)
 
-    def generate_confirmation_token(self, expiration=10):
+    def generate_confirmation_token(self, expiration=1800):
         """
         :param expiration: 超时时间，默认3600秒。
         :return: 令牌
         """
         sersializer = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
+        self.token_created_at = datetime.now()
+        db.session.add(self)
         return sersializer.dumps({'confirm': self.id})
 
     def confirm(self, token):
