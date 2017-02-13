@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <!-- Meta, title, CSS, favicons, etc. -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>DockerM - 请邮箱认证！</title>
+
+        <!-- Bootstrap -->
+        <link href="{{ url_for('static',filename='lib/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link href="{{ url_for('static',filename='lib/font-awesome/font-awesome.min.css') }}" rel="stylesheet">
+        <!-- Custom Theme Style -->
+        <link href="{{ url_for('static',filename='css/custom.css') }}" rel="stylesheet">
+         <!-- PNotify -->
+        <link href="{{ url_for('static',filename='lib/pnotify/pnotify.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static',filename='lib/pnotify/pnotify.buttons.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static',filename='lib/pnotify/pnotify.nonblock.css') }}" rel="stylesheet">
+        <!-- jQuery -->
+        <script src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
+        <!-- PNotify -->
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.buttons.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/pnotify/pnotify.nonblock.js') }}"></script>
+    </head>
+    <script>
+            $(document).ready(function() {
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message  in messages %}
+                            new PNotify({
+                                text: "{{ message }}",
+                                type: "{{ category }}",
+                                styling: 'bootstrap3'
+                            });
+                    {% endfor %}
+                {% endwith %}
+            });
+    </script>
+    <body class="login">
+        <div>
+            <div class="login_wrapper">
+                <div class="animate form">
+                    <h1>邮箱尚未认证！</h1>
+                    <p style="margin-top:20px;"><b>尊敬的 {{ username }} , 您尚未完成邮箱认证。</b></p>
+                    <p><b>请登录你注册时所用邮箱，点击认证链接完成认证。</b></p>
+                    <p><b>如果认证链接过期，请点此链接</b>：<a href="{{ url_for('dockermAuth.resendconfirmed') }}">重新发送认证邮件 。</p>
+                    <p><a href="{{ url_for('dockermAuth.logout') }}">登出</p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

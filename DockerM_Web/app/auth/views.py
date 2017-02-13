@@ -41,7 +41,7 @@ def unconfirmed():
         return redirect(url_for('dockermAuth.login'))
     if not current_app._get_current_object().config['CONFIRMED']:
         return redirect(url_for('dockerm.index'))
-    return render_template('unconfirmed.html', username=current_user.username)
+    return render_template('auth/unconfirmed.html', username=current_user.username)
 
 
 @dockermAuth.route('/resendfirmed', methods=['GET'])
@@ -77,7 +77,7 @@ def login():
             return redirect(request.args.get("next") or url_for('dockerm.index'))
         else:
             flash(u'用户名或者密码错误！', 'error')
-    return render_template('login.html',
+    return render_template('auth/login.html',
                            loginform=loginform,
                            registerform=registerform,
                            username=session.get('username'),
