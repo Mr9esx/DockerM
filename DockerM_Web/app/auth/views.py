@@ -46,7 +46,7 @@ def unconfirmed():
 
 @dockermAuth.route('/resendfirmed', methods=['GET'])
 @login_required
-def resendconfirmed():
+def resend_confirmed():
     if not current_app._get_current_object().config['CONFIRMED']:
         return redirect(url_for('dockerm.index'))
     if not current_user.confirmed:

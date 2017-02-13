@@ -5,6 +5,7 @@ from flask import current_app
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer
+from sqlalchemy import desc
 
 
 class User(db.Model):
@@ -70,20 +71,16 @@ class User(db.Model):
         """
         return check_password_hash(self.password, form_data_password)
 
-    def to_dict(self):
-        column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
-        return dict((column_name, getattr(self, column_name, None)) for column_name in column_name_list)
-
 
 @lm.user_loader
-def load_user(id):
-    user = User.query.filter_by(id=id).first()
+def load_user(uid):
+    user = User.query.filter_by(id=uid).first()
     return user
 
 
 class Containers(db.Model):
     __tablename__ = 'containers'
-    container_id = db.Column(db.String(64),primary_key=True)
+    container_id = db.Column(db.String(64), primary_key=True)
     container_name = db.Column(db.String(64))
     image_id = db.Column(db.String(64))
     saltstack_id = db.Column(db.String(64), db.ForeignKey('hosts.saltstack_id'))
@@ -91,9 +88,117 @@ class Containers(db.Model):
     status = db.Column(db.String(64))
     info = db.Column(db.Text)
 
-    def to_dict(self):
-        column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
-        return dict((column_name, getattr(self, column_name, None)) for column_name in column_name_list)
+    @classmethod
+    def get_all_container(cls):
+        """
+        @:return:返回含有全部主机的全部容器信息的List，并按时间降序排序
+        @:rtype:list
+        """
+        return cls.query.order_by(desc('created_at')).all()
+
+    @classmethod
+    def get_all_container_by_pagination(cls, page):
+        """
+        @:return:使用分页的形式返回含有全部主机的全部容器信息，并按时间降序排序
+        @:rtype:flask_sqlalchemy.Pagination
+        @:note:记得加 .items 才能获取或者遍历数据
+        """
+        # if page is None or int(page) <= 0:
+        #     page = 1
+        # else:
+        #     try:
+        #         page = int(page)
+        #     except:
+        #         page = 1
+        result = cls.query.order_by(desc('created_at')).paginate(page, current_app._get_current_object().config['PER_PAGE'], error_out=True)
+        return result
+
+    @classmethod
+    def get_container_according_to_host(cls, saltstack_id):
+        """
+        @:return:返回含有指定主机的全部容器信息的List，并按时间降序排序
+        @:rtype:list
+        @:param host_id:主机 id
+        """
+        return cls.query.filter_by(saltstack_id=saltstack_id).order_by(desc('created_at')).all()
+
+    @classmethod
+    def get_container_according_to_host_with_pagination(cls, saltstack_id, page):
+        """
+        @:return:使用分页的形式返回含有指定主机的全部容器信息的List，并按时间降序排序
+        @:rtype:flask_sqlalchemy.Pagination
+        @:param host_id:主机 id
+        @:param page:页数
+        """
+        # if page is None or int(page) <= 0:
+        #     page = 1
+        # else:
+        #     try:
+        #         page = int(page)
+        #     except:
+        #         page = 1
+        result = cls.query.filter_by(saltstack_id=saltstack_id).order_by(desc('created_at')).paginate(page, current_app._get_current_object().config['PER_PAGE'],
+                                                                                                      error_out=True)
+        return result
+
+    @classmethod
+    def get_container_according_to_status(cls, status):
+        """
+        @:return:返回含有全部主机的指定容器状态信息的List，并按时间降序排序
+        @:rtype:list
+        @:param status:主机 id
+        """
+        return cls.query.order_by(desc('created_at')).filter_by(status=status).all()
+
+    @classmethod
+    def get_container_according_to_status_with_paginate(cls, status, page):
+        """
+        @:return:使用分页的形式返回含有全部主机的指定容器状态信息的List，并按时间降序排序
+        @:rtype:flask_sqlalchemy.Pagination
+        @:param status:主机 id
+        @:param page:页数
+        """
+        return cls.query.order_by(desc('created_at')).filter_by(status=status).all().paginate(page, current_app._get_current_object().config['PER_PAGE'], error_out=True)
+
+    @classmethod
+    def get_container_info_according_to_container_id(cls, container_id):
+        """
+        @:return:获取指定容器的全部信息
+        @:rtype:app.lib.dbModel.Containers
+        @:param container_id:容器 id
+        """
+        return cls.query.filter_by(container_id=container_id).first()
+
+    @classmethod
+    def update_container_follow_state(cls, container_id, state):
+        if state is 0 or state is 1:
+            container = cls.query.filter_by(container_id=container_id).first()
+            container.follow = state
+            db.session.commit()
+            return True
+        else:
+            return False
+
+    @classmethod
+    def get_host_info_according_to_container_id(cls, container_id):
+        """
+        @:return:获取指定容器 ID 的主机信息
+        @:rtype:app.lib.dbModel.Container
+        @:param container_id:容器 ID
+        """
+        return cls.query.filter_by(container_id=container_id).first()
+
+    @classmethod
+    def container_is_exited(cls, container_id):
+        """
+        @:return:传入主机ID，并从数据库中查询，不存在返回False。
+        @:rtype:bool
+        @:param host_id:主机 ID
+        """
+        if cls.query.filter_by(container_id=container_id).first() is None:
+            return False
+        else:
+            return True
 
 
 class Hosts(db.Model):
@@ -106,9 +211,45 @@ class Hosts(db.Model):
     image_list = db.relationship('Images', backref='hosts', lazy='dynamic')
     container_list = db.relationship('Containers', backref='hosts', lazy='dynamic')
 
-    def to_dict(self):
-        column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
-        return dict((column_name, getattr(self, column_name, None)) for column_name in column_name_list)
+    @classmethod
+    def get_all_host(cls):
+        """
+        @:return:返回含有全部主机信息的List，并按时间降序排序。如
+        @:rtype:list
+        """
+        return cls.query.order_by(desc('created_at')).all()
+
+    @classmethod
+    def get_all_host_by_paginate(cls, page):
+        """
+        @:return:使用分页的形式返回含有全部主机信息的List，并按时间降序排序
+        @:rtype:list
+        @:param page:页数
+        """
+        return cls.query.order_by(desc('created_at')).paginate(page,
+                                                               current_app._get_current_object().config['PER_PAGE'],
+                                                               False)
+
+    @classmethod
+    def get_host_info_according_to_saltstack_id(cls, saltstack_id):
+        """
+        @:return:获取指定主机的信息
+        @:rtype:app.lib.dbModel.Hosts
+        @:param host_id:主机 ID
+        """
+        return cls.query.filter_by(saltstack_id=saltstack_id).first()
+
+    @classmethod
+    def host_is_exited(cls, saltstack_id):
+        """
+        @:return:传入主机ID，并从数据库中查询，不存在返回False。
+        @:rtype:bool
+        @:param host_id:主机 ID
+        """
+        if cls.query.filter_by(saltstack_id=saltstack_id).first() is None:
+            return False
+        else:
+            return True
 
 
 class Images(db.Model):
@@ -120,14 +261,68 @@ class Images(db.Model):
     info = db.Column(db.Text)
     history = db.Column(db.Text)
 
-    def to_dict(self):
-        column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
-        return dict((column_name, getattr(self, column_name, None)) for column_name in column_name_list)
+    @classmethod
+    def get_all_image(cls):
+        """
+        @:return:返回含有全部主机的全部镜像信息的List，并按时间降序排序
+        @:rtype:list
+        """
+        return cls.query.order_by(desc('created_at')).all()
+
+    @classmethod
+    def get_all_image_by_paginate(cls, page):
+        """
+        @:return:使用分页的形式返回含有全部主机的全部镜像信息，并按时间降序排序
+        @:rtype:flask_sqlalchemy.Pagination
+        @:note:记得加 .items 才能获取或者遍历数据
+        """
+        return cls.query.order_by(desc('created_at')).paginate(page, current_app._get_current_object().config['PER_PAGE'], error_out=True)
+
+    @classmethod
+    def get_image_according_to_host(cls, saltstack_id):
+        """
+        @:return:返回含有指定主机的全部镜像信息的List，并按时间降序排序
+        @:rtype:list
+        @:param host_id:主机 id
+        """
+        return cls.query.filter_by(saltstack_id=saltstack_id).order_by(desc('created_at')).all()
+
+    @classmethod
+    def get_image_according_to_host_with_paginate(cls, saltstack_id, page):
+        """
+        @:return:使用分页的形式返回含有指定主机的全部镜像信息的List，并按时间降序排序
+        @:rtype:flask_sqlalchemy.Pagination
+        @:param host_id:主机 id
+        @:param page:页数
+        """
+        return cls.query.filter_by(saltstack_id=saltstack_id).order_by(desc('created_at')).paginate(page, current_app._get_current_object().config['PER_PAGE'],
+                                                                                                    error_out=True)
+
+    @classmethod
+    def get_image_info_according_to_image_id(cls, image_id):
+        """
+        @:return:获取指定镜像的全部信息
+        @:rtype:app.lib.dbModel.Images
+        @:param image_id:镜像 ID
+        """
+        return cls.query.filter_by(image_id=image_id).first()
+
+    @classmethod
+    def image_is_exited(cls, image_id):
+        """
+        @:return:传入主机ID，并从数据库中查询，不存在返回False。
+        @:rtype:bool
+        @:param host_id:主机 ID
+        """
+        if cls.query.filter_by(image_id=image_id).first() is None:
+            return False
+        else:
+            return True
 
 
-class Container_Status(db.Model):
+class ContainerStatus(db.Model):
     __tablename__ = 'container_status'
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     container_id = db.Column(db.String(64))
     cpu_percent = db.Column(db.Float)
     memory_usage = db.Column(db.String(64))
@@ -145,14 +340,25 @@ class Container_Status(db.Model):
     rx_speed = db.Column(db.String(64))
     collect_time = db.Column(db.String(64))
 
-    def to_dict(self):
-        column_name_list = [value[0] for value in self._sa_instance_state.attrs.items()]
-        return dict((column_name, getattr(self, column_name, None)) for column_name in column_name_list)
+    @classmethod
+    def get_container_status(cls, container_id):
+        """
+        @:return:Api 接口，获取指定容器监控信息。(目前没用)
+        @:rtype:list
+        @:param container_id:容器 ID
+        """
+        if Containers.containeri_exited(container_id):
+            tmp = cls.query.filter_by(container_id=container_id).limit(60).all()
+            json = []
+            [json.append(data.to_dict()) for data in tmp]
+            return json
+        else:
+            pass
 
 
-class Operation_Log(db.Model):
+class OperationLog(db.Model):
     __tablename__ = 'operation_log'
-    id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     operation_time = db.Column(db.DateTime)
     operation_type = db.Column(db.String(128))
     operation_id = db.Column(db.String(128))

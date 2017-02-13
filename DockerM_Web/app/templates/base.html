@@ -46,9 +46,10 @@
                         <div class="menu_section">
                             <ul class="nav side-menu">
                                 <li id="index"><a href="{{ url_for ('dockerm.index') }}"><i class="fa fa-home "></i> 首页</a></li>
-                                <li id="hosts"><a href="{{ url_for ('dockerm.hostsPage') }}"><i class="fa fa-server"></i> 主机 </a></li>
-                                <li id="containers"><a href="{{ url_for ('dockerm.containersPage', saltstack_id='all') }}"><i class="fa fa-cubes"></i> 容器 </a></li>
-                                <li id="images"><a href="{{ url_for ('dockerm.imagesPage', saltstack_id='all') }}"><i class="fa fa-floppy-o"></i> 镜像 </a></li>
+                                <li id="hosts"><a href="{{ url_for ('dockerm.hosts_page') }}"><i class="fa fa-server"></i> 主机 </a></li>
+                                <li id="apps"><a href="#"><i class="fa fa-window-maximize"></i> 应用 </a></li>
+                                <li id="containers"><a href="{{ url_for ('dockerm.containers_page', saltstack_id='all') }}"><i class="fa fa-cubes"></i> 容器 </a></li>
+                                <li id="images"><a href="{{ url_for ('dockerm.images_page', saltstack_id='all') }}"><i class="fa fa-floppy-o"></i> 镜像 </a></li>
                                 <li id="networks"><a href=""><i class="fa fa-sitemap"></i> 网络 </a></li>
                                 <li id="setting"><a href=""><i class="fa fa-cog"></i> 设置</a></li>
                             </ul>

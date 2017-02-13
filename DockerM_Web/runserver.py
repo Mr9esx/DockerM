@@ -3,7 +3,7 @@
 import os
 from app import create_app, db, mail
 from gevent.wsgi import WSGIServer
-from app.lib.dbModel import User, Containers, Images ,Container_Status
+from app.lib.dbModel import User, Containers, Images ,ContainerStatus
 from flask_script import Manager, Shell, Server, Command
 from flask_migrate import Migrate, MigrateCommand
 
@@ -14,7 +14,7 @@ migrate = Migrate(app, db)
 
 
 def shell_context():
-    return dict(app=app, db=db, User=User, Containers=Containers, Images=Images, Container_Status=Container_Status)
+    return dict(app=app, db=db, User=User, Containers=Containers, Images=Images, Container_Status=ContainerStatus)
 
 
 # class CreateDb(Command):

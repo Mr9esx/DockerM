@@ -18,6 +18,9 @@ class Config:
     # 是否启用邮箱认证
     CONFIRMED = True
 
+    # 默认分页每页个数
+    PER_PAGE = 15
+
     MAIL_SERVER = 'smtp.qq.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
